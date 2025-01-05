@@ -1,0 +1,391 @@
+%% Aliakbar Zarkoob, AKA "XIV"
+%  Gmail: XIV.Aliakbar.Zarkoob@gmail.com
+%  Telegram: @XIVAliakbar
+
+clc, clear, close all, beep off, format long g
+set(0,'defaultTextInterpreter','latex')
+
+%#ok<*MINV>
+
+%% Load Data
+
+data.main = readtable('Global_XGM2019_Potential_6-0Deg.dat', 'NumHeaderLines', 32, 'ReadVariableNames', false, 'FileType', 'text');
+data.main.Properties.VariableNames = {'idx', 'lon', 'lat', 'h', 'v'};
+data.valid = readtable('Global_XGM2019_Potential_3-0Deg.dat', 'NumHeaderLines', 32, 'ReadVariableNames', false, 'FileType', 'text');
+data.valid.Properties.VariableNames = {'idx', 'lon', 'lat', 'h', 'v'};
+
+% data.main = readtable('Global_XGM2019_PotentialEll_5-0Deg.gdf', 'NumHeaderLines', 35, 'ReadVariableNames', false, 'FileType', 'text');
+% data.main.Properties.VariableNames = {'lon', 'lat', 'v'};
+% h = zeros(height(data.main), 1);
+% data.main = [data.main(:, 1:2) table(h) data.main(:, 3)];
+% data.valid = readtable('Global_XGM2019_PotentialEll_2-5Deg.gdf', 'NumHeaderLines', 35, 'ReadVariableNames', false, 'FileType', 'text');
+% data.valid.Properties.VariableNames = {'lon', 'lat', 'v'};
+% h = zeros(height(data.valid), 1);
+% data.valid = [data.valid(:, 1:2) table(h) data.valid(:, 3)];
+% clear h
+
+%% Add White Noise
+
+data.main.v = data.main.v + randn(height(data.main), 1)*200;
+
+%% Covert Coordinates From Geodetic To Cartesian
+
+wgs84 = wgs84Ellipsoid;
+a = wgs84.SemimajorAxis;
+b = wgs84.SemiminorAxis;
+e = wgs84.Eccentricity;
+
+N = a./sqrt(1-e^2*sind(data.main.lat).^2);
+X = (N+data.main.h).*cosd(data.main.lat).*cosd(data.main.lon);
+Y = (N+data.main.h).*cosd(data.main.lat).*sind(data.main.lon);
+Z = (b^2*N/a^2+data.main.h).*sind(data.main.lat);
+data.main = [data.main table(X) table(Y) table(Z)];
+
+N = a./sqrt(1-e^2*sind(data.valid.lat).^2);
+X = (N+data.valid.h).*cosd(data.valid.lat).*cosd(data.valid.lon);
+Y = (N+data.valid.h).*cosd(data.valid.lat).*sind(data.valid.lon);
+Z = (b^2*N/a^2+data.valid.h).*sind(data.valid.lat);
+data.valid = [data.valid table(X) table(Y) table(Z)];
+
+clear X Y Z N
+
+%% Normalizing
+
+tmp = sqrt(data.main.X.^2 + data.main.Y.^2 + data.main.Z.^2);
+data.main.X = data.main.X./tmp;
+data.main.Y = data.main.Y./tmp;
+data.main.Z = data.main.Z./tmp;
+
+tmp = sqrt(data.valid.X.^2 + data.valid.Y.^2 + data.valid.Z.^2);
+data.valid.X = data.valid.X./tmp;
+data.valid.Y = data.valid.Y./tmp;
+data.valid.Z = data.valid.Z./tmp;
+
+clear tmp
+
+%% Kernel Functions & Compution of Design Matrices
+
+function K = AbelPoisson_Kernel(x, y, h)
+    % Computes the Abel-Poisson kernel for points x and y on a sphere of radius R
+    % 
+    % Parameters:
+    %     x (vector): A vector representing a point on the sphere (shape: (3,1))
+    %     y (vector): A vector representing a point on the sphere (shape: (3,1))
+    %     h (float): Smoothing parameter for the kernel, 0 < h < 1
+    %     R (float): Radius of the sphere
+    % 
+    % Returns:
+    %     float: The value of the Poisson kernel
+    
+    % K = 0.25/pi * (norm(x)^2 * norm(y)^2 - h^2 * R^4)/(norm(x)^2 * norm(y)^2 + h^2 * R^4 - 2*h*R^2*dot(x, y))^(3/2);
+    % K = (1 - h^2) / (1 + h^2 - 2*h*dot(x, y)/(norm(x)*norm(y)))^(3/2);
+    L_h = 1 + h^2 - 2*h*dot(x, y); K = 0.25/pi * (1 - h^2)/(L_h)^(3/2);
+end
+
+function K = Singularity_Kernel(x, y, h)
+    % Computes the Singularity kernel for points x and y on a sphere of unit radius
+    % 
+    % Parameters:
+    %     x (vector): A vector representing a point on the sphere (shape: (3,1))
+    %     y (vector): A vector representing a point on the sphere (shape: (3,1))
+    %     h (float): Smoothing parameter for the kernel, 0 < h < 1
+    % 
+    % Returns:
+    %     float: The value of the Singularity kernel
+    
+    L_h = 1 + h^2 - 2*h*dot(x, y); K = 0.5/pi/L_h^0.5;
+end
+
+function K = Logarithmic_Kernel(x, y, h)
+    % Computes the Logarithmic kernel for points x and y on a sphere of unit radius
+    % 
+    % Parameters:
+    %     x (vector): A vector representing a point on the sphere (shape: (3,1))
+    %     y (vector): A vector representing a point on the sphere (shape: (3,1))
+    %     h (float): Smoothing parameter for the kernel, 0 < h < 1
+    % 
+    % Returns:
+    %     float: The value of the Logarithmic kernel
+    
+    L_h = 1 + h^2 - 2*h*dot(x, y); 
+    K = 0.5/pi/h * log(1 + 2*h/(L_h^0.5 + 1 - h));
+end
+
+function [A, A_int] = create_design(data_main, data_valid, h, kernel)
+    n = height(data_main);
+    A = zeros(n, n);
+    tmp1 = [data_main.X data_main.Y data_main.Z];
+    for i = 1:n
+        for j = 1:n
+            % Ni = a/sqrt(1-e^2*sind(data.main.lat(i))^2);
+            % Mi = (a*(1-e^2))/(1-e^2*sind(data.main.lat(i))^2)^(3/2);
+            % Ri = sqrt(Ni*Mi);
+            % Nj = a/sqrt(1-e^2*sind(data.main.lat(j))^2);
+            % Mj = (a*(1-e^2))/(1-e^2*sind(data.main.lat(j))^2)^(3/2);
+            % Rj = sqrt(Nj*Mj);
+            % R = (Ri+Rj)/2;
+            if strcmpi(kernel, 'abelpoisson')
+                A(i, j) = AbelPoisson_Kernel(tmp1(i,:), tmp1(j,:), h);
+            elseif strcmpi(kernel, 'singularity')
+                A(i, j) = Singularity_Kernel(tmp1(i,:), tmp1(j,:), h);
+            elseif strcmpi(kernel, 'logarithmic')
+                A(i, j) = Logarithmic_Kernel(tmp1(i,:), tmp1(j,:), h);
+            else 
+                error('The Input Kernel Is Not Valid!')
+            end
+        end 
+    end
+    
+    u = height(data_valid);
+    A_int = zeros(u, n);
+    tmp2 = [data_valid.X data_valid.Y data_valid.Z];
+    for i = 1:u
+        for j = 1:n
+            % Ni = a/sqrt(1-e^2*sind(data.valid.lat(i))^2);
+            % Mi = (a*(1-e^2))/(1-e^2*sind(data.valid.lat(i))^2)^(3/2);
+            % Ri = sqrt(Ni*Mi);
+            % Nj = a/sqrt(1-e^2*sind(data.main.lat(j))^2);
+            % Mj = (a*(1-e^2))/(1-e^2*sind(data.main.lat(j))^2)^(3/2);
+            % Rj = sqrt(Nj*Mj);
+            % R = (Ri+Rj)/2;
+            if strcmpi(kernel, 'abelpoisson')
+                A_int(i, j) = AbelPoisson_Kernel(tmp2(i,:), tmp1(j,:), h);
+            elseif strcmpi(kernel, 'singularity')
+                A_int(i, j) = Singularity_Kernel(tmp2(i,:), tmp1(j,:), h);
+            elseif strcmpi(kernel, 'logarithmic')
+                A_int(i, j) = Logarithmic_Kernel(tmp2(i,:), tmp1(j,:), h);
+            else 
+                error('The Input Kernel Is Not Valid!')
+            end
+        end 
+    end
+end
+
+
+n = height(data.main);
+u = height(data.valid);
+R = 6371000;
+
+% h Value Gained Form The Test Below
+% AbelPoisson: chol 0.360   tsvd 0.685   vce 0.511
+% Singularity: chol 0.405   tsvd 0.783   vce 0.712
+% Logarithmic: chol 0.457   tsvd 0.848   vce 0.850
+
+% [A, A_int] = create_design(data.main, data.valid, 0.360, 'AbelPoisson');
+% [A, A_int] = create_design(data.main, data.valid, 0.405, 'Singularity');
+[A, A_int] = create_design(data.main, data.valid, 0.457, 'Logarithmic');
+
+
+%% Test To Find Best "h"
+
+function best_h = test_h(data, method, kernel) %#ok<DEFNU>
+    for i = 1:3
+        if i == 1
+            h = 0:10^-i:1;
+        else
+            h = best_h-10^(-(i-1)):10^-i:best_h+10^(-(i-1));
+        end
+        idx = ismember(h, [1 0]);
+        if sum(idx) ~= 0
+            h(idx) = [];
+        end
+        norm_test = zeros(size(h));
+        n = height(data.main);
+        for j = 1:length(h)
+            [A, A_int] = create_design(data.main, data.valid, h(j), kernel);
+            if strcmpi(method, 'chol')
+                coeff_test = lscov(A, data.main.v, eye(n), 'chol');
+                int_test = A_int*coeff_test;
+                diff_test = data.valid.v - int_test;
+                norm_test(j) = norm(diff_test);
+            elseif strcmpi(method, 'tsvd')
+                k = 5:5:n;
+                [U, S, V] = svd(A);
+                [coeff_test, ~, ~] = tsvd(U, diag(S), V, data.main.v, k);
+                int_test = A_int*coeff_test;
+                diff_test = data.valid.v - int_test;
+                [~, idx] = min(vecnorm(diff_test));
+                norm_test(j) = norm(diff_test(:, idx));
+            elseif strcmpi(method, 'vce')
+                [coeff_test, ~, ~, ~, ~, ~] = ...
+                vce_iter_opt(A, data.main.v, zeros(n,1), eye(n), eye(n), 1, 5);
+                coeff_test = coeff_test(:,end);
+                int_test = A_int*coeff_test;
+                diff_test = data.valid.v - int_test;
+                norm_test(j) = norm(diff_test);
+            else
+                error('The Input Method Is Not Valid!')
+            end
+        end
+        [~, idx_min] = min(norm_test);
+        best_h = h(idx_min);
+    end
+end
+
+% best_h = test_h(data, 'vce', 'Logarithmic');
+
+
+%% Chech For Ill-Conditionaliy
+
+figure()
+imagesc(A)
+axis equal tight
+colormap('turbo')
+colorbar
+
+[U, S, V] = svd(A);
+
+figure()
+semilogy(diag(S),'k','LineWidth',3)
+title(sprintf('Sigular Values   (Condition Number = %e)',cond(A)),'FontSize',13)
+grid on; axis tight
+
+figure()
+PicardPlot(U, diag(S), data.main.v)
+
+%% Compute Coefficients and Interpolated Values
+
+coeff.A = inv(A)*data.main.v;
+int.A = A_int*coeff.A;
+diff.A = data.valid.v - int.A;
+
+coeff.chol = lscov(A, data.main.v, eye(n), 'chol');
+int.chol = A_int*coeff.chol;
+diff.chol = data.valid.v - int.chol;
+
+k = 5:5:n;
+[coeff.tsvd, ~, ~] = tsvd(U, diag(S), V, data.main.v, k);
+int.tsvd = A_int*coeff.tsvd;
+diff.tsvd = data.valid.v - int.tsvd;
+[~, idx] = min(vecnorm(diff.tsvd));
+coeff.tsvd = coeff.tsvd(:, idx);
+int.tsvd = int.tsvd(:, idx);
+diff.tsvd = diff.tsvd(:, idx);
+k = k(idx);
+clear idx
+
+[coeff.vce, ~, ~, sigma2_y, sigma2_x, alpha_vce] = ...
+    vce_iter_opt(A, data.main.v, zeros(n,1), eye(n), eye(n), 1, 5);
+coeff.vce = coeff.vce(:,end);
+int.vce = A_int*coeff.vce;
+diff.vce = data.valid.v - int.vce;
+
+% [Uq, Sq, Xq, Vq] = cgsvd(A, eye(n));
+% figure()
+% [reg_min, ~, ~] = gcv(Uq(:,1:n), Sq, data.main.v, 'Tikh');
+% coeff.tikh_gcv = inv(A'*A + reg_min*eye(n))*A'*data.main.v; 
+% int.tikh_gcv = A_int*coeff.tikh_gcv;
+% diff.tikh_gcv = data.valid.v - int.tikh_gcv;
+% 
+% figure()
+% [reg_corner, ~, ~, ~] = l_curve(Uq(:,1:n), Sq, data.main.v, 'Tikh');
+% grid on
+% coeff.tikh_lcurve = inv(A'*A + reg_corner*eye(n))*A'*data.main.v; 
+% int.tikh_lcurve = A_int*coeff.tikh_lcurve;
+% diff.tikh_lcurve = data.valid.v - int.tikh_lcurve;
+
+%% Plot Results 
+
+function plot_result(lon, lat, interpolation, difference, marker_size, map_space, method)
+    worldMap = readgeotable('landareas.shp');
+    figure()
+    subplot(1, 2, 1)
+    hold on
+    scatter(lon, lat, marker_size, interpolation, 'filled')
+    geoshow(worldMap, 'FaceColor', 'none');
+    axis equal 
+    xlim([min(lon) max(lon)]+map_space*[-1 1])
+    ylim([min(lat) max(lat)]+map_space*[-1 1])
+    colormap('turbo')
+    hhh = colorbar; set(get(hhh,'ylabel'),'String','$\frac{m^2}{s^2}$','FontSize',16,'Interpreter','latex');
+    xlabel('Longitude')
+    ylabel('Latitude')
+    title('Interpolated Values')
+    box on
+    grid on
+    set(gca, 'Layer', 'top')
+    subplot(1, 2, 2)
+    hold on
+    scatter(lon, lat, marker_size, difference, 'filled')
+    geoshow(worldMap, 'FaceColor', 'none');
+    axis equal 
+    xlim([min(lon) max(lon)]+map_space*[-1 1])
+    ylim([min(lat) max(lat)]+map_space*[-1 1])
+    colormap('turbo')
+    hhh = colorbar; set(get(hhh,'ylabel'),'String','$\frac{m^2}{s^2}$','FontSize',16,'Interpreter','latex');
+    xlabel('Longitude')
+    ylabel('Latitude')
+    title('Difference From True Values')
+    box on
+    grid on
+    set(gca, 'Layer', 'top')
+    sgtitle(method)
+    fprintf('\nNorm of Error Vector for %s Method:\n%f\n', method, round(norm(difference),4))
+    fprintf('\nMean of Error Vector for %s Method:\n%f\n', method, round(mean(difference),4))
+end
+
+space = 0;
+plot_result(data.valid.lon, data.valid.lat, int.A, diff.A, 20, space, '$A^{-1}l$')
+plot_result(data.valid.lon, data.valid.lat, int.chol, diff.chol, 20, space, 'Cholesky')
+plot_result(data.valid.lon, data.valid.lat, int.tsvd, diff.tsvd, 20, space, 'TSVD')
+plot_result(data.valid.lon, data.valid.lat, int.vce, diff.vce, 20, space, 'VCE')
+% plot_result(data.valid.lon, data.valid.lat, int.tikh_gcv, diff.tikh_gcv, 20, space, 'Tikhonov (GCV)')
+% plot_result(data.valid.lon, data.valid.lat, int.tikh_lcurve, diff.tikh_lcurve, 20, space, 'Tikhonov (L-Curve)')
+
+%% Plot Main Data
+
+space = 0;
+worldMap = readgeotable('landareas.shp');
+figure()
+subplot(1, 2, 1)
+hold on
+scatter(data.main.lon, data.main.lat, 20, data.main.v, 'filled')
+geoshow(worldMap, 'FaceColor', 'none');
+axis equal 
+xlim([min(data.main.lon) max(data.main.lon)]+space*[-1 1])
+ylim([min(data.main.lat) max(data.main.lat)]+space*[-1 1])
+colormap('turbo')
+hhh = colorbar; set(get(hhh,'ylabel'),'String','$\frac{m^2}{s^2}$','FontSize',16,'Interpreter','latex');
+xlabel('Longitude')
+ylabel('Latitude')
+title('Grid 06min')
+box on
+grid on
+set(gca, 'Layer', 'top')
+subplot(1, 2, 2)
+hold on
+scatter(data.valid.lon, data.valid.lat, 20, data.valid.v, 'filled')
+geoshow(worldMap, 'FaceColor', 'none');
+axis equal 
+xlim([min(data.main.lon) max(data.main.lon)]+space*[-1 1])
+ylim([min(data.main.lat) max(data.main.lat)]+space*[-1 1])
+colormap('turbo')
+hhh = colorbar; set(get(hhh,'ylabel'),'String','$\frac{m^2}{s^2}$','FontSize',16,'Interpreter','latex');
+xlabel('Longitude')
+ylabel('Latitude')
+title('Grid 03min')
+box on
+grid on
+set(gca, 'Layer', 'top')
+sgtitle('Gravity Potential Data From XGM2019 Model')
+
+clear space hhh
+
+%% Export for Plots in Python
+
+main_data = [data.main.lon data.main.lat data.main.v];
+valid_data = [data.valid.lon data.valid.lat data.valid.v];
+int_chol = int.chol;
+int_tsvd = int.tsvd;
+int_vce = int.vce;
+diff_chol = diff.chol;
+diff_tsvd = diff.tsvd;
+diff_vce = diff.vce;
+
+% save('OutputNoise_AbelPoisson.mat', 'main_data', 'valid_data', 'int_chol', 'int_tsvd', 'int_vce', 'diff_chol', 'diff_tsvd', 'diff_vce')
+% save('OutputNoise_Singularity.mat', 'main_data', 'valid_data', 'int_chol', 'int_tsvd', 'int_vce', 'diff_chol', 'diff_tsvd', 'diff_vce')
+save('OutputNoise_Logarithmic.mat', 'main_data', 'valid_data', 'int_chol', 'int_tsvd', 'int_vce', 'diff_chol', 'diff_tsvd', 'diff_vce')
+
+% int_A = int.A;
+% diff_A = diff.A;
+% save('NoRegResult.mat', 'int_A', 'diff_A')
