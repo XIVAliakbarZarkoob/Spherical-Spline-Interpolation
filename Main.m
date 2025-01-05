@@ -26,7 +26,7 @@ data.valid.Properties.VariableNames = {'idx', 'lon', 'lat', 'h', 'v'};
 
 %% Add White Noise
 
-data.main.v = data.main.v + randn(height(data.main), 1)*200;
+% data.main.v = data.main.v + randn(height(data.main), 1)*200;
 
 %% Covert Coordinates From Geodetic To Cartesian
 
@@ -171,14 +171,14 @@ R = 6371000;
 % Singularity: chol 0.405   tsvd 0.783   vce 0.712
 % Logarithmic: chol 0.457   tsvd 0.848   vce 0.850
 
-% [A, A_int] = create_design(data.main, data.valid, 0.360, 'AbelPoisson');
+[A, A_int] = create_design(data.main, data.valid, 0.360, 'AbelPoisson');
 % [A, A_int] = create_design(data.main, data.valid, 0.405, 'Singularity');
-[A, A_int] = create_design(data.main, data.valid, 0.457, 'Logarithmic');
+% [A, A_int] = create_design(data.main, data.valid, 0.457, 'Logarithmic');
 
 
 %% Test To Find Best "h"
 
-function best_h = test_h(data, method, kernel) %#ok<DEFNU>
+function best_h = test_h(data, method, kernel, norm_flag) %#ok<DEFNU>
     for i = 1:3
         if i == 1
             h = 0:10^-i:1;
@@ -197,7 +197,13 @@ function best_h = test_h(data, method, kernel) %#ok<DEFNU>
                 coeff_test = lscov(A, data.main.v, eye(n), 'chol');
                 int_test = A_int*coeff_test;
                 diff_test = data.valid.v - int_test;
-                norm_test(j) = norm(diff_test);
+                if norm_flag == 1 
+                    norm_test(j) = norm(diff_test);
+                elseif norm_flag == 2
+                    norm_test(j) = norm(A*coeff_test - data.main.v);
+                else 
+                    error('the norm_flag parameter shoud be either 1 or 2.')
+                end
             elseif strcmpi(method, 'tsvd')
                 k = 5:5:n;
                 [U, S, V] = svd(A);
@@ -205,14 +211,26 @@ function best_h = test_h(data, method, kernel) %#ok<DEFNU>
                 int_test = A_int*coeff_test;
                 diff_test = data.valid.v - int_test;
                 [~, idx] = min(vecnorm(diff_test));
-                norm_test(j) = norm(diff_test(:, idx));
+                if norm_flag == 1 
+                    norm_test(j) = norm(diff_test(:, idx));
+                elseif norm_flag == 2
+                    norm_test(j) = norm(A*coeff_test(:, idx) - data.main.v);
+                else 
+                    error('the norm_flag parameter shoud be either 1 or 2.')
+                end
             elseif strcmpi(method, 'vce')
                 [coeff_test, ~, ~, ~, ~, ~] = ...
                 vce_iter_opt(A, data.main.v, zeros(n,1), eye(n), eye(n), 1, 5);
                 coeff_test = coeff_test(:,end);
                 int_test = A_int*coeff_test;
                 diff_test = data.valid.v - int_test;
-                norm_test(j) = norm(diff_test);
+                if norm_flag == 1 
+                    norm_test(j) = norm(diff_test);
+                elseif norm_flag == 2
+                    norm_test(j) = norm(A*coeff_test - data.main.v);
+                else 
+                    error('the norm_flag parameter shoud be either 1 or 2.')
+                end
             else
                 error('The Input Method Is Not Valid!')
             end
@@ -222,7 +240,7 @@ function best_h = test_h(data, method, kernel) %#ok<DEFNU>
     end
 end
 
-% best_h = test_h(data, 'vce', 'Logarithmic');
+% best_h = test_h(data, 'chol', 'abelpoisson', 2);
 
 
 %% Chech For Ill-Conditionaliy
@@ -248,6 +266,10 @@ PicardPlot(U, diag(S), data.main.v)
 coeff.A = inv(A)*data.main.v;
 int.A = A_int*coeff.A;
 diff.A = data.valid.v - int.A;
+
+coeff.pinv = pinv(A)*data.main.v;
+int.pinv = A_int*coeff.pinv;
+diff.pinv = data.valid.v - int.pinv;
 
 coeff.chol = lscov(A, data.main.v, eye(n), 'chol');
 int.chol = A_int*coeff.chol;
@@ -326,6 +348,7 @@ end
 
 space = 0;
 plot_result(data.valid.lon, data.valid.lat, int.A, diff.A, 20, space, '$A^{-1}l$')
+plot_result(data.valid.lon, data.valid.lat, int.pinv, diff.pinv, 20, space, 'PINV')
 plot_result(data.valid.lon, data.valid.lat, int.chol, diff.chol, 20, space, 'Cholesky')
 plot_result(data.valid.lon, data.valid.lat, int.tsvd, diff.tsvd, 20, space, 'TSVD')
 plot_result(data.valid.lon, data.valid.lat, int.vce, diff.vce, 20, space, 'VCE')
