@@ -76,11 +76,10 @@ function K = AbelPoisson_Kernel(x, y, h)
     % 
     % Returns:
     %     float: The value of the Poisson kernel
-    
+
     % K = 0.25/pi * (norm(x)^2 * norm(y)^2 - h^2 * R^4)/(norm(x)^2 * norm(y)^2 + h^2 * R^4 - 2*h*R^2*dot(x, y))^(3/2);
     % K = (1 - h^2) / (1 + h^2 - 2*h*dot(x, y)/(norm(x)*norm(y)))^(3/2);
-    % L_h = 1 + h^2 - 2*h*dot(x, y); K = 0.25/pi * (1 - h^2)/(L_h)^(3/2);
-    K = 1/(4*pi)*((1 - h^2) / (1+h^2-2*h*dot(x, y))^1.5);
+    L_h = 1 + h^2 - 2*h*dot(x, y); K = 0.25/pi * (1 - h^2)/(L_h)^(3/2);
 end
 
 function K = Singularity_Kernel(x, y, h)
