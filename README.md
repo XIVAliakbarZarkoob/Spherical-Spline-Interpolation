@@ -8,71 +8,21 @@ The study also explores the effects of **ill-conditioning** in the design matrix
 
 ---
 
-## Key Features
-
-### Spherical Spline Interpolation
-The interpolation follows the equation:
-
-\[ S(y) = \sum_{i=1}^{N} a_i K(x_i, y) \]
-
-Where:
-- \( y \): Desired point.
-- \( x_i \): Input points.
-- \( a_i \): Coefficients for spherical spline interpolation.
-- \( K(x_i, y) \): Kernel function.
-
-The coefficients \( a_i \) are computed by solving a linear system:
-
-\[ A a = F \]
-
-Here, \( A \) is the design matrix formed by the kernel functions, and \( F \) is the vector of function values at the input points. Given the **ill-conditioning** of \( A \), regularization methods are used to compute \( a_i \).
-
 ### Kernel Functions
 Three kernel functions are used:
 1. **Abel-Poisson Kernel**:
-   \[
-   K_{Abel-Poisson}(x, y) = \frac{1}{4\pi} \frac{1-h^2}{(L_h(x, y))^{3/2}}
-   \]
 
 2. **Singularity Kernel**:
-   \[
-   K_{Singularity}(x, y) = \frac{1}{2\pi} \frac{1}{(L_h(x, y))^{1/2}}
-   \]
 
 3. **Logarithmic Kernel**:
-   \[
-   K_{Logarithmic}(x, y) = \frac{1}{2\pi h} \ln \left( 1 + \frac{2h}{(L_h(x, y))^{1/2} + 1 - h} \right)
-   \]
-
-Where:
-- \( L_h(x, y) = 1 + h^2 - 2h \langle x, y \rangle \).
-- \( h \): Smoothing parameter (\( 0 < h < 1 \)).
 
 ### Regularization Methods
 - **Cholesky Decomposition**: For numerically stable solutions in well-conditioned cases.
 - **TSVD (Truncated Singular Value Decomposition)**: For handling ill-conditioned matrices by truncating small singular values.
 - **Tikhonov Regularization**: Uses a regularization parameter derived from **Variance Component Estimation (VCE)**.
 
----
-
-## Implementation Details
-
 ### Dataset
 The gravity potential data used in this project was obtained from the **International Center for Global Earth Models (ICGEM)**. The original dataset is sampled on a 6-degree global grid and interpolated to a finer 3-degree grid.
-
-### Error Definition
-The interpolation error is defined as:
-
-\[ e = l - \hat{l} \]
-
-Where:
-- \( l \): True value (obtained from the XGM2019 model).
-- \( \hat{l} \): Interpolated value.
-
-### Handling Ill-Conditioned Design Matrix
-The design matrix \( A \) is ill-conditioned with a condition number of \( 7.15 \times 10^{49} \). Without regularization, solutions are unstable, as demonstrated by the **Picard plot** and interpolation results.
-
----
 
 ## Results
 
