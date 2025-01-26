@@ -6,305 +6,393 @@ clc, clear, close all, beep off, format long g
 set(0,'defaultTextInterpreter','latex')
 
 %#ok<*MINV>
+%#ok<*UNRCH>
+
+%% INPUT **********************************************************************
+
+SAVE_OUTPUTS = false;
+
+KERNEL = questdlg('Select The Desired Kernel Function', 'Kernel Funtion', ...
+    'Abel-Poisson', 'Singularity', 'Logarithmic', 'Abel-Poisson');
+if isempty(KERNEL)
+    return
+end
+METHOD_LIST = {'Cholesky', 'TSVD', 'GCV', 'L-Curve', 'VCE'};
+METHOD = listdlg('PromptString','Select Regularization Method', ...
+    'ListString',METHOD_LIST,'SelectionMode','single', ...
+    'ListSize', [300,100]);
+METHOD = string(METHOD_LIST(METHOD));
+if isempty(METHOD)
+    return
+end
+NOISE = questdlg('Add White Noise to Input Data?', 'White Noise', ...
+    'Yes', 'No', 'No');
+if isempty(NOISE)
+    NOISE = 'No';
+end
+
+% *****************************************************************************
 
 %% Load Data
 
 data.main = readtable('Global_XGM2019_Potential_6-0Deg.dat', 'NumHeaderLines', 32, 'ReadVariableNames', false, 'FileType', 'text');
-data.main.Properties.VariableNames = {'idx', 'lon', 'lat', 'h', 'v'};
+data.main.Properties.VariableNames = {'idx', 'lon', 'lat', 'h', 'U'};
 data.valid = readtable('Global_XGM2019_Potential_3-0Deg.dat', 'NumHeaderLines', 32, 'ReadVariableNames', false, 'FileType', 'text');
-data.valid.Properties.VariableNames = {'idx', 'lon', 'lat', 'h', 'v'};
+data.valid.Properties.VariableNames = {'idx', 'lon', 'lat', 'h', 'U'};
 
-% data.main = readtable('Global_XGM2019_PotentialEll_5-0Deg.gdf', 'NumHeaderLines', 35, 'ReadVariableNames', false, 'FileType', 'text');
-% data.main.Properties.VariableNames = {'lon', 'lat', 'v'};
-% h = zeros(height(data.main), 1);
-% data.main = [data.main(:, 1:2) table(h) data.main(:, 3)];
-% data.valid = readtable('Global_XGM2019_PotentialEll_2-5Deg.gdf', 'NumHeaderLines', 35, 'ReadVariableNames', false, 'FileType', 'text');
-% data.valid.Properties.VariableNames = {'lon', 'lat', 'v'};
-% h = zeros(height(data.valid), 1);
-% data.valid = [data.valid(:, 1:2) table(h) data.valid(:, 3)];
-% clear h
+%% Create Data200
+
+% function U = Potential(lat, lon, GM, R, min_l, max_l, C_lm, S_lm)
+% 
+%     U = zeros(length(lat), 1);
+%     m = kron(ones(max_l+1, 1), (0:max_l));
+%     l = m';
+%     r = ones(length(lat), 1)*6378136.3;
+%     C_lm = C_lm(1:max_l+1, 1:max_l+1);
+%     S_lm = S_lm(1:max_l+1, 1:max_l+1);
+%     for i = 1:length(lat)
+%         P_lm = zeros(max_l+1, max_l+1);
+%         for k = 0:max_l
+%             P_lm(k+1, 1:k+1) = legendre(k, cosd(lat(i)), 'sch');
+%         end
+%             R_r_ratio = (R/r(i)).^(l + 1);
+%             K = R_r_ratio.*P_lm.*(C_lm.*cosd(m*lon(i))+S_lm.*sind(m*lon(i)));
+%             U(i,1) = (GM/R)*sum(sum(K(min_l+1:max_l,:)));
+%     end
+% 
+% end
+% 
+% CS = gfc_read('WHU-SWPU-GOGR2022S.gfc');
+% STEP_INPUT = 6; % degrees
+% STEP_INT = 3; % degrees
+% min_l = 10;
+% max_l = 300;
+% 
+% lat = (1:STEP_INPUT:179)';
+% lon = (1:STEP_INPUT:359)'; 
+% [lon, lat] = meshgrid(lon, lat);
+% lon = lon(:); lat = lat(:);
+% data.main = table(lon, lat);
+% data.main.U = Potential(lat, lon, CS.GM, CS.R, min_l, max_l, CS.C_lm, CS.S_lm);
+% 
+% lat = (1:STEP_INT:179)';
+% lon = (1:STEP_INT:359)'; 
+% [lon, lat] = meshgrid(lon, lat);
+% lon = lon(:); lat = lat(:);
+% data.valid = table(lon, lat);
+% data.valid.U = Potential(lat, lon, CS.GM, CS.R, min_l, max_l, CS.C_lm, CS.S_lm);
 
 %% Add White Noise
 
-% data.main.v = data.main.v + randn(height(data.main), 1)*200;
+if strcmp(NOISE, 'Yes')
+    wn = str2double(cell2mat(inputdlg('Enter The Standard Deviation of White Noise', 'White Noise STD', [1,45])));
+    % wn = 400;
+    data.main.U = data.main.U + randn(height(data.main), 1)*wn;
+end
 
 %% Covert Coordinates From Geodetic To Cartesian
 
-wgs84 = wgs84Ellipsoid;
-a = wgs84.SemimajorAxis;
-b = wgs84.SemiminorAxis;
-e = wgs84.Eccentricity;
+% data.main.X = CS.R.*sind(data.main.lat).*cosd(data.main.lon);
+% data.main.Y = CS.R.*sind(data.main.lat).*sind(data.main.lon);
+% data.main.Z = CS.R.*cosd(data.main.lat);
+% 
+% data.valid.X = CS.R.*sind(data.valid.lat).*cosd(data.valid.lon);
+% data.valid.Y = CS.R.*sind(data.valid.lat).*sind(data.valid.lon);
+% data.valid.Z = CS.R.*cosd(data.valid.lat);
 
-N = a./sqrt(1-e^2*sind(data.main.lat).^2);
-X = (N+data.main.h).*cosd(data.main.lat).*cosd(data.main.lon);
-Y = (N+data.main.h).*cosd(data.main.lat).*sind(data.main.lon);
-Z = (b^2*N/a^2+data.main.h).*sind(data.main.lat);
-data.main = [data.main table(X) table(Y) table(Z)];
+function [X, Y, Z] = geo2cart(lat, lon, h)
+    wgs84 = wgs84Ellipsoid;
+    a = wgs84.SemimajorAxis;
+    b = wgs84.SemiminorAxis;
+    e = wgs84.Eccentricity;
+    N = a./sqrt(1-e^2*sind(lat).^2);
+    X = (N+h).*cosd(lat).*cosd(lon);
+    Y = (N+h).*cosd(lat).*sind(lon);
+    Z = (b^2*N/a^2+h).*sind(lat);
+end
 
-N = a./sqrt(1-e^2*sind(data.valid.lat).^2);
-X = (N+data.valid.h).*cosd(data.valid.lat).*cosd(data.valid.lon);
-Y = (N+data.valid.h).*cosd(data.valid.lat).*sind(data.valid.lon);
-Z = (b^2*N/a^2+data.valid.h).*sind(data.valid.lat);
-data.valid = [data.valid table(X) table(Y) table(Z)];
-
-clear X Y Z N
+[data.main.X, data.main.Y, data.main.Z] = geo2cart(data.main.lat, data.main.lon, data.main.h);
+[data.valid.X, data.valid.Y, data.valid.Z] = geo2cart(data.valid.lat, data.valid.lon, data.valid.h);
 
 %% Normalizing
 
-tmp = sqrt(data.main.X.^2 + data.main.Y.^2 + data.main.Z.^2);
-data.main.X = data.main.X./tmp;
-data.main.Y = data.main.Y./tmp;
-data.main.Z = data.main.Z./tmp;
+function [Xn, Yn, Zn] = normalized(X, Y, Z)
+    NORM = sqrt(X.^2 + Y.^2 + Z.^2);
+    Xn = X./NORM; Yn = Y./NORM; Zn = Z./NORM;
+end
 
-tmp = sqrt(data.valid.X.^2 + data.valid.Y.^2 + data.valid.Z.^2);
-data.valid.X = data.valid.X./tmp;
-data.valid.Y = data.valid.Y./tmp;
-data.valid.Z = data.valid.Z./tmp;
-
-clear tmp
+[data.main.X, data.main.Y, data.main.Z] = normalized(data.main.X, data.main.Y, data.main.Z);
+[data.valid.X, data.valid.Y, data.valid.Z] = normalized(data.valid.X, data.valid.Y, data.valid.Z);
 
 %% Kernel Functions & Compution of Design Matrices
 
-function K = AbelPoisson_Kernel(x, y, h)
-    % Computes the Abel-Poisson kernel for points x and y on a sphere of radius R
-    % 
-    % Parameters:
-    %     x (vector): A vector representing a point on the sphere (shape: (3,1))
-    %     y (vector): A vector representing a point on the sphere (shape: (3,1))
-    %     h (float): Smoothing parameter for the kernel, 0 < h < 1
-    %     R (float): Radius of the sphere
-    % 
-    % Returns:
-    %     float: The value of the Poisson kernel
-
-    % K = 0.25/pi * (norm(x)^2 * norm(y)^2 - h^2 * R^4)/(norm(x)^2 * norm(y)^2 + h^2 * R^4 - 2*h*R^2*dot(x, y))^(3/2);
-    % K = (1 - h^2) / (1 + h^2 - 2*h*dot(x, y)/(norm(x)*norm(y)))^(3/2);
-    L_h = 1 + h^2 - 2*h*dot(x, y); K = 0.25/pi * (1 - h^2)/(L_h)^(3/2);
-end
-
-function K = Singularity_Kernel(x, y, h)
-    % Computes the Singularity kernel for points x and y on a sphere of unit radius
-    % 
-    % Parameters:
-    %     x (vector): A vector representing a point on the sphere (shape: (3,1))
-    %     y (vector): A vector representing a point on the sphere (shape: (3,1))
-    %     h (float): Smoothing parameter for the kernel, 0 < h < 1
-    % 
-    % Returns:
-    %     float: The value of the Singularity kernel
-    
-    L_h = 1 + h^2 - 2*h*dot(x, y); K = 0.5/pi/L_h^0.5;
-end
-
-function K = Logarithmic_Kernel(x, y, h)
-    % Computes the Logarithmic kernel for points x and y on a sphere of unit radius
-    % 
-    % Parameters:
-    %     x (vector): A vector representing a point on the sphere (shape: (3,1))
-    %     y (vector): A vector representing a point on the sphere (shape: (3,1))
-    %     h (float): Smoothing parameter for the kernel, 0 < h < 1
-    % 
-    % Returns:
-    %     float: The value of the Logarithmic kernel
-    
-    L_h = 1 + h^2 - 2*h*dot(x, y); 
-    K = 0.5/pi/h * log(1 + 2*h/(L_h^0.5 + 1 - h));
-end
-
 function [A, A_int] = create_design(data_main, data_valid, h, kernel)
-    n = height(data_main);
-    A = zeros(n, n);
-    tmp1 = [data_main.X data_main.Y data_main.Z];
-    for i = 1:n
-        for j = 1:n
-            % Ni = a/sqrt(1-e^2*sind(data.main.lat(i))^2);
-            % Mi = (a*(1-e^2))/(1-e^2*sind(data.main.lat(i))^2)^(3/2);
-            % Ri = sqrt(Ni*Mi);
-            % Nj = a/sqrt(1-e^2*sind(data.main.lat(j))^2);
-            % Mj = (a*(1-e^2))/(1-e^2*sind(data.main.lat(j))^2)^(3/2);
-            % Rj = sqrt(Nj*Mj);
-            % R = (Ri+Rj)/2;
-            if strcmpi(kernel, 'abelpoisson')
-                A(i, j) = AbelPoisson_Kernel(tmp1(i,:), tmp1(j,:), h);
-            elseif strcmpi(kernel, 'singularity')
-                A(i, j) = Singularity_Kernel(tmp1(i,:), tmp1(j,:), h);
-            elseif strcmpi(kernel, 'logarithmic')
-                A(i, j) = Logarithmic_Kernel(tmp1(i,:), tmp1(j,:), h);
-            else 
-                error('The Input Kernel Is Not Valid!')
-            end
-        end 
-    end
-    
-    u = height(data_valid);
-    A_int = zeros(u, n);
-    tmp2 = [data_valid.X data_valid.Y data_valid.Z];
-    for i = 1:u
-        for j = 1:n
-            % Ni = a/sqrt(1-e^2*sind(data.valid.lat(i))^2);
-            % Mi = (a*(1-e^2))/(1-e^2*sind(data.valid.lat(i))^2)^(3/2);
-            % Ri = sqrt(Ni*Mi);
-            % Nj = a/sqrt(1-e^2*sind(data.main.lat(j))^2);
-            % Mj = (a*(1-e^2))/(1-e^2*sind(data.main.lat(j))^2)^(3/2);
-            % Rj = sqrt(Nj*Mj);
-            % R = (Ri+Rj)/2;
-            if strcmpi(kernel, 'abelpoisson')
-                A_int(i, j) = AbelPoisson_Kernel(tmp2(i,:), tmp1(j,:), h);
-            elseif strcmpi(kernel, 'singularity')
-                A_int(i, j) = Singularity_Kernel(tmp2(i,:), tmp1(j,:), h);
-            elseif strcmpi(kernel, 'logarithmic')
-                A_int(i, j) = Logarithmic_Kernel(tmp2(i,:), tmp1(j,:), h);
-            else 
-                error('The Input Kernel Is Not Valid!')
-            end
-        end 
-    end
-end
 
+    n = height(data_main);
+    u = height(data_valid);
+
+    XYZ1 = table2array(data_main(:,{'X','Y','Z'}));
+    inner_product = sum(kron(XYZ1, ones(n,1)) .* kron(ones(n,1), XYZ1), 2);
+    inner_product = reshape(inner_product, n, n);
+    
+    XYZ2 = table2array(data_valid(:,{'X','Y','Z'}));
+    inner_product_int = sum(kron(XYZ1, ones(u,1)) .* kron(ones(n,1), XYZ2), 2);
+    inner_product_int = reshape(inner_product_int, u, n);
+    
+    if strcmp(kernel, 'Abel-Poisson')
+        L_h = 1 + h^2 - 2*h*inner_product;
+        A = 0.25/pi * (1 - h^2)./(L_h).^(3/2);
+        L_h = 1 + h^2 - 2*h*inner_product_int;
+        A_int = 0.25/pi * (1 - h^2)./(L_h).^(3/2);
+    elseif strcmp(kernel, 'Singularity')
+        L_h = 1 + h^2 - 2*h*inner_product;
+        A = 0.5/pi./L_h.^0.5;
+        L_h = 1 + h^2 - 2*h*inner_product_int;
+        A_int = 0.5/pi./L_h.^0.5;
+    elseif strcmp(kernel, 'Logarithmic')
+        L_h = 1 + h^2 - 2*h*inner_product; 
+        A = 0.5/pi/h * log(1 + 2*h./(L_h.^0.5 + 1 - h));
+        L_h = 1 + h^2 - 2*h*inner_product_int; 
+        A_int = 0.5/pi/h * log(1 + 2*h./(L_h.^0.5 + 1 - h));
+    else
+        error('The Input Kernel Is Not Valid!')
+    end
+
+end
 
 n = height(data.main);
 u = height(data.valid);
-R = 6371000;
 
-% h Value Gained Form The Test Below
-% AbelPoisson: chol 0.360   tsvd 0.685   vce 0.511
-% Singularity: chol 0.405   tsvd 0.783   vce 0.712
-% Logarithmic: chol 0.457   tsvd 0.848   vce 0.850
+%% "Signal to Noise Ratio (SNR)" Method to find the best "h"
 
-[A, A_int] = create_design(data.main, data.valid, 0.360, 'AbelPoisson');
-% [A, A_int] = create_design(data.main, data.valid, 0.405, 'Singularity');
-% [A, A_int] = create_design(data.main, data.valid, 0.457, 'Logarithmic');
+function [h_values, SNR_values] = SNR(data, method, kernel)
 
-
-%% Test To Find Best "h"
-
-function best_h = test_h(data, method, kernel, norm_flag) %#ok<DEFNU>
-    for i = 1:3
-        if i == 1
-            h = 0:10^-i:1;
-        else
-            h = best_h-10^(-(i-1)):10^-i:best_h+10^(-(i-1));
-        end
-        idx = ismember(h, [1 0]);
-        if sum(idx) ~= 0
-            h(idx) = [];
-        end
-        norm_test = zeros(size(h));
-        n = height(data.main);
-        for j = 1:length(h)
-            [A, A_int] = create_design(data.main, data.valid, h(j), kernel);
-            if strcmpi(method, 'chol')
-                coeff_test = lscov(A, data.main.v, eye(n), 'chol');
-                int_test = A_int*coeff_test;
-                diff_test = data.valid.v - int_test;
-                if norm_flag == 1 
-                    norm_test(j) = norm(diff_test);
-                elseif norm_flag == 2
-                    norm_test(j) = norm(A*coeff_test - data.main.v);
-                else 
-                    error('the norm_flag parameter shoud be either 1 or 2.')
-                end
-            elseif strcmpi(method, 'tsvd')
-                k = 5:5:n;
-                [U, S, V] = svd(A);
-                [coeff_test, ~, ~] = tsvd(U, diag(S), V, data.main.v, k);
-                int_test = A_int*coeff_test;
-                diff_test = data.valid.v - int_test;
-                [~, idx] = min(vecnorm(diff_test));
-                if norm_flag == 1 
-                    norm_test(j) = norm(diff_test(:, idx));
-                elseif norm_flag == 2
-                    norm_test(j) = norm(A*coeff_test(:, idx) - data.main.v);
-                else 
-                    error('the norm_flag parameter shoud be either 1 or 2.')
-                end
-            elseif strcmpi(method, 'vce')
-                [coeff_test, ~, ~, ~, ~, ~] = ...
-                vce_iter_opt(A, data.main.v, zeros(n,1), eye(n), eye(n), 1, 5);
-                coeff_test = coeff_test(:,end);
-                int_test = A_int*coeff_test;
-                diff_test = data.valid.v - int_test;
-                if norm_flag == 1 
-                    norm_test(j) = norm(diff_test);
-                elseif norm_flag == 2
-                    norm_test(j) = norm(A*coeff_test - data.main.v);
-                else 
-                    error('the norm_flag parameter shoud be either 1 or 2.')
-                end
-            else
-                error('The Input Method Is Not Valid!')
-            end
-        end
-        [~, idx_min] = min(norm_test);
-        best_h = h(idx_min);
+    function ratio = SNR_cal(S, S_hat)
+        ratio = 10*log10(sum(S.^2,'all')/sum((S-S_hat).^2,'all'));
     end
+
+    h_values = (0.01:0.01:0.99)';
+    n = height(data.main);
+    SNR_values = zeros(length(h_values), 1);
+    for j = 1:length(h_values)
+        [A, A_int] = create_design(data.main, data.valid, h_values(j), kernel);
+        if strcmp(method, 'Cholesky')
+            coeff_test = lscov(A, data.main.U, eye(n), 'chol');
+            SNR_values(j) = SNR_cal(data.main.U, A*coeff_test);
+            % SNR_values(j) = SNR_cal(data.valid.U, A_int*coeff_test);
+        elseif strcmp(method, 'TSVD')
+            k = 5:5:n;
+            [U, S, V] = svd(A);
+            [coeff_test, ~, ~] = tsvd(U, diag(S), V, data.main.U, k);
+            int_test = A_int*coeff_test;
+            diff_test = data.valid.U - int_test;
+            [~, idx] = min(vecnorm(diff_test));
+            SNR_values(j) = SNR_cal(data.main.U, A*coeff_test(:,idx));
+            % SNR_values(j) = SNR_cal(data.valid.U, A_int*coeff_test(:,idx));
+        elseif strcmp(method, 'VCE')
+            [coeff_test, ~, ~, ~, ~, ~] = ...
+            vce_iter_opt(A, data.main.U, zeros(n,1), eye(n), eye(n), 1, 5);
+            coeff_test = coeff_test(:,end);
+            SNR_values(j) = SNR_cal(data.main.U, A*coeff_test);
+            % SNR_values(j) = SNR_cal(data.valid.U, A_int*coeff_test);
+        elseif strcmp(method, 'GCV')
+            [Uq, Sq, ~, ~] = cgsvd(A, eye(n));
+            [reg_min, ~, ~] = gcv(Uq(:,1:n), Sq, data.main.U, 'Tikh');
+            coeff_test = inv(A'*A + reg_min*eye(n))*A'*data.main.U;
+            SNR_values(j) = SNR_cal(data.main.U, A*coeff_test);
+            % SNR_values(j) = SNR_cal(data.valid.U, A_int*coeff_test);
+        else
+            error('The Input Method Is Not Valid!')
+        end
+    end
+
 end
 
-% best_h = test_h(data, 'chol', 'abelpoisson', 2);
+% [h_values, SNR_values] = SNR(data, METHOD, KERNEL);
+% idx = max(SNR_values) == SNR_values;
+% h = h_values(idx); h = h(1);
+% [A, A_int] = create_design(data.main, data.valid, h, KERNEL);
+% 
+% figure()
+% hold on, grid on, box on
+% plot(h_values, SNR_values, '.-k', 'LineWidth', 1.5, 'MarkerSize', 15)
+% plot(h, SNR_values(idx), '.r', 'MarkerSize', 35)
+% xlabel('$h$', 'FontSize', 15)
+% ylabel('$SNR$', 'FontSize', 15)
 
+%% "Cross-Validation" Method to find the best "h"
+
+function cv = CV_h(data, method, kernel, cv_percent, h_decimals)
+
+    for i = 1:h_decimals
+
+        if i == 1
+            h_values = (10^-1 : 10^-1 : 9*10^-1)';
+        else
+            h_values = (best_h - 9*10^-i : 10^-i : best_h + 9*10^-i)';
+        end
+
+        n = height(data.main);
+        cv_num = ceil(n*cv_percent);
+        n = n - cv_num;
+        cv_idx = sort(randperm(n, cv_num))';
+        data_main = data.main; data_main(cv_idx,:) = [];
+        data_cv = data.main(cv_idx, :);
+        cv.(sprintf('dec%g', i)) = table(h_values,zeros(length(h_values),1));
+        cv.(sprintf('dec%g', i)).Properties.VariableNames = {'h','norm'};
+
+        for j = 1:length(h_values)
+            [A, A_int] = create_design(data_main, data_cv, h_values(j), kernel);
+            if strcmp(method, 'Cholesky')
+                coeff_test = lscov(A, data_main.U, eye(n), 'chol');
+                cv.(sprintf('dec%g', i)).norm(j) = norm(data_cv.U - A_int*coeff_test);
+            elseif strcmp(method, 'TSVD')
+                k = 5:5:n;
+                [U, S, V] = svd(A);
+                [coeff_test, ~, ~] = tsvd(U, diag(S), V, data_main.U, k);
+                int_test = A_int*coeff_test;
+                diff_test = data_cv.U - int_test;
+                [~, idx] = min(vecnorm(diff_test));
+                cv.(sprintf('dec%g', i)).norm(j) = norm(data_cv.U - A_int*coeff_test(:,idx));
+            elseif strcmp(method, 'VCE')
+                [coeff_test, ~, ~, ~, ~, ~] = ...
+                vce_iter_opt(A, data_main.U, zeros(n,1), eye(n), eye(n), 1, 5);
+                coeff_test = coeff_test(:,end);
+                cv.(sprintf('dec%g', i)).norm(j) = norm(data_cv.U - A_int*coeff_test);
+            elseif strcmp(method, 'GCV')
+                [Uq, Sq, ~, ~] = cgsvd(A, eye(n));
+                [reg_min, ~, ~] = gcv(Uq(:,1:n), Sq, data_main.U, 'Tikh');
+                coeff_test = inv(A'*A + reg_min*eye(n))*A'*data_main.U;
+                cv.(sprintf('dec%g', i)).norm(j) = norm(data_cv.U - A_int*coeff_test);
+            elseif strcmp(method, 'L-Curve')
+                [Uq, Sq, ~, ~] = cgsvd(A, eye(n));
+                [reg_corner, ~, ~, ~] = l_curve(Uq(:,1:n), Sq, data_main.U, 'Tikh');
+                coeff_test = inv(A'*A + reg_corner*eye(n))*A'*data_main.U; 
+                cv.(sprintf('dec%g', i)).norm(j) = norm(data_cv.U - A_int*coeff_test);
+            end
+        end
+        best_norm = min(cv.(sprintf('dec%g', i)).norm);
+        best_h = best_norm == cv.(sprintf('dec%g', i)).norm;
+        best_h = cv.(sprintf('dec%g', i)).h(best_h); best_h = best_h(1);
+    end
+    cv.best_h = best_h;
+    cv.best_norm = best_norm;
+end
+
+max_dec = 3;
+cv = CV_h(data, METHOD, KERNEL, 0.05, max_dec);
+h = cv.best_h;
+[A, A_int] = create_design(data.main, data.valid, h, KERNEL);
+
+figure()
+for i = 1:max_dec
+    subplot(max_dec,1,i)
+    hold on, grid on, box on
+    plot(cv.(sprintf('dec%g', i)).h, cv.(sprintf('dec%g', i)).norm, '.-k', 'LineWidth', 1.5, 'MarkerSize', 15)
+    idx = min(cv.(sprintf('dec%g', i)).norm) == cv.(sprintf('dec%g', i)).norm;
+    plot(cv.(sprintf('dec%g', i)).h(idx), cv.(sprintf('dec%g', i)).norm(idx), '.r', 'MarkerSize', 35)
+    xlabel('$h$', 'FontSize', 15)
+    ylabel('$||S-\hat{S}||$', 'FontSize', 15)
+end
 
 %% Chech For Ill-Conditionaliy
 
 figure()
 imagesc(A)
+title('Design Matrix')
 axis equal tight
 colormap('turbo')
 colorbar
 
 [U, S, V] = svd(A);
-
 figure()
-semilogy(diag(S),'k','LineWidth',3)
-title(sprintf('Sigular Values   (Condition Number = %e)',cond(A)),'FontSize',13)
-grid on; axis tight
-
-figure()
-PicardPlot(U, diag(S), data.main.v)
+PicardPlot(U, diag(S), data.main.U)
 
 %% Compute Coefficients and Interpolated Values
 
-coeff.A = inv(A)*data.main.v;
+coeff.A = inv(A)*data.main.U;
 int.A = A_int*coeff.A;
-diff.A = data.valid.v - int.A;
+diff.A = data.valid.U - int.A;
 
-coeff.pinv = pinv(A)*data.main.v;
+coeff.pinv = pinv(A)*data.main.U;
 int.pinv = A_int*coeff.pinv;
-diff.pinv = data.valid.v - int.pinv;
+diff.pinv = data.valid.U - int.pinv;
 
-coeff.chol = lscov(A, data.main.v, eye(n), 'chol');
-int.chol = A_int*coeff.chol;
-diff.chol = data.valid.v - int.chol;
+if strcmp(METHOD, 'Cholesky')
+    coeff.chol = lscov(A, data.main.U, eye(n), 'chol');
+    int.chol = A_int*coeff.chol;
+    diff.chol = data.valid.U - int.chol;
+elseif strcmp(METHOD, 'TSVD')
+    k = 5:5:n;
+    [coeff.tsvd, ~, ~] = tsvd(U, diag(S), V, data.main.U, k);
+    int.tsvd = A_int*coeff.tsvd;
+    diff.tsvd = data.valid.U - int.tsvd;
+    [~, idx] = min(vecnorm(diff.tsvd));
+    coeff.tsvd = coeff.tsvd(:, idx);
+    int.tsvd = int.tsvd(:, idx);
+    diff.tsvd = diff.tsvd(:, idx);
+    k = k(idx);
+    clear idx
+elseif strcmp(METHOD, 'VCE')
+    [coeff.vce, ~, ~, sigma2_y, sigma2_x, alpha_vce] = ...
+        vce_iter_opt(A, data.main.U, zeros(n,1), eye(n), eye(n), 1, 5);
+    coeff.vce = coeff.vce(:,end);
+    int.vce = A_int*coeff.vce;
+    diff.vce = data.valid.U - int.vce;
+elseif strcmp(METHOD, 'GCV')
+    [Uq, Sq, ~, ~] = cgsvd(A, eye(n));
+    figure()
+    [reg_min, ~, ~] = gcv(Uq(:,1:n), Sq, data.main.U, 'Tikh');
+    coeff.tikh_gcv = inv(A'*A + reg_min*eye(n))*A'*data.main.U; 
+    int.tikh_gcv = A_int*coeff.tikh_gcv;
+    diff.tikh_gcv = data.valid.U - int.tikh_gcv;
+elseif strcmp(METHOD, 'L-Curve')
+    [Uq, Sq, ~, ~] = cgsvd(A, eye(n));
+    [reg_corner, ~, ~, ~] = l_curve(Uq(:,1:n), Sq, data.main.U, 'Tikh');
+    coeff.tikh_lcurve = inv(A'*A + reg_corner*eye(n))*A'*data.main.U; 
+    int.tikh_lcurve = A_int*coeff.tikh_lcurve;
+    diff.tikh_lcurve = data.valid.U - int.tikh_lcurve;
+end
 
-k = 5:5:n;
-[coeff.tsvd, ~, ~] = tsvd(U, diag(S), V, data.main.v, k);
-int.tsvd = A_int*coeff.tsvd;
-diff.tsvd = data.valid.v - int.tsvd;
-[~, idx] = min(vecnorm(diff.tsvd));
-coeff.tsvd = coeff.tsvd(:, idx);
-int.tsvd = int.tsvd(:, idx);
-diff.tsvd = diff.tsvd(:, idx);
-k = k(idx);
-clear idx
 
-[coeff.vce, ~, ~, sigma2_y, sigma2_x, alpha_vce] = ...
-    vce_iter_opt(A, data.main.v, zeros(n,1), eye(n), eye(n), 1, 5);
-coeff.vce = coeff.vce(:,end);
-int.vce = A_int*coeff.vce;
-diff.vce = data.valid.v - int.vce;
+%% Plot Main Data
 
-% [Uq, Sq, Xq, Vq] = cgsvd(A, eye(n));
-% figure()
-% [reg_min, ~, ~] = gcv(Uq(:,1:n), Sq, data.main.v, 'Tikh');
-% coeff.tikh_gcv = inv(A'*A + reg_min*eye(n))*A'*data.main.v; 
-% int.tikh_gcv = A_int*coeff.tikh_gcv;
-% diff.tikh_gcv = data.valid.v - int.tikh_gcv;
-% 
-% figure()
-% [reg_corner, ~, ~, ~] = l_curve(Uq(:,1:n), Sq, data.main.v, 'Tikh');
-% grid on
-% coeff.tikh_lcurve = inv(A'*A + reg_corner*eye(n))*A'*data.main.v; 
-% int.tikh_lcurve = A_int*coeff.tikh_lcurve;
-% diff.tikh_lcurve = data.valid.v - int.tikh_lcurve;
+space = 0;
+worldMap = readgeotable('landareas.shp');
+figure()
+subplot(1, 2, 1)
+hold on
+scatter(data.main.lon, data.main.lat, 20, data.main.U, 'filled')
+geoshow(worldMap, 'FaceColor', 'none');
+axis equal 
+xlim([min(data.main.lon) max(data.main.lon)]+space*[-1 1])
+ylim([min(data.main.lat) max(data.main.lat)]+space*[-1 1])
+colormap('turbo')
+hhh = colorbar; set(get(hhh,'ylabel'),'String','$\frac{m^2}{s^2}$','FontSize',16,'Interpreter','latex');
+xlabel('Longitude')
+ylabel('Latitude')
+title('Grid 06min')
+box on
+grid on
+set(gca, 'Layer', 'top')
+subplot(1, 2, 2)
+hold on
+scatter(data.valid.lon, data.valid.lat, 20, data.valid.U, 'filled')
+geoshow(worldMap, 'FaceColor', 'none');
+axis equal 
+xlim([min(data.main.lon) max(data.main.lon)]+space*[-1 1])
+ylim([min(data.main.lat) max(data.main.lat)]+space*[-1 1])
+colormap('turbo')
+hhh = colorbar; set(get(hhh,'ylabel'),'String','$\frac{m^2}{s^2}$','FontSize',16,'Interpreter','latex');
+xlabel('Longitude')
+ylabel('Latitude')
+title('Grid 03min')
+box on
+grid on
+set(gca, 'Layer', 'top')
+sgtitle('Gravity Potential Data From XGM2019 Model')
+
+clear space hhh
 
 %% Plot Results 
 
@@ -347,68 +435,79 @@ function plot_result(lon, lat, interpolation, difference, marker_size, map_space
 end
 
 space = 0;
-plot_result(data.valid.lon, data.valid.lat, int.A, diff.A, 20, space, '$A^{-1}l$')
-plot_result(data.valid.lon, data.valid.lat, int.pinv, diff.pinv, 20, space, 'PINV')
-plot_result(data.valid.lon, data.valid.lat, int.chol, diff.chol, 20, space, 'Cholesky')
-plot_result(data.valid.lon, data.valid.lat, int.tsvd, diff.tsvd, 20, space, 'TSVD')
-plot_result(data.valid.lon, data.valid.lat, int.vce, diff.vce, 20, space, 'VCE')
-% plot_result(data.valid.lon, data.valid.lat, int.tikh_gcv, diff.tikh_gcv, 20, space, 'Tikhonov (GCV)')
-% plot_result(data.valid.lon, data.valid.lat, int.tikh_lcurve, diff.tikh_lcurve, 20, space, 'Tikhonov (L-Curve)')
-
-%% Plot Main Data
-
-space = 0;
-worldMap = readgeotable('landareas.shp');
-figure()
-subplot(1, 2, 1)
-hold on
-scatter(data.main.lon, data.main.lat, 20, data.main.v, 'filled')
-geoshow(worldMap, 'FaceColor', 'none');
-axis equal 
-xlim([min(data.main.lon) max(data.main.lon)]+space*[-1 1])
-ylim([min(data.main.lat) max(data.main.lat)]+space*[-1 1])
-colormap('turbo')
-hhh = colorbar; set(get(hhh,'ylabel'),'String','$\frac{m^2}{s^2}$','FontSize',16,'Interpreter','latex');
-xlabel('Longitude')
-ylabel('Latitude')
-title('Grid 06min')
-box on
-grid on
-set(gca, 'Layer', 'top')
-subplot(1, 2, 2)
-hold on
-scatter(data.valid.lon, data.valid.lat, 20, data.valid.v, 'filled')
-geoshow(worldMap, 'FaceColor', 'none');
-axis equal 
-xlim([min(data.main.lon) max(data.main.lon)]+space*[-1 1])
-ylim([min(data.main.lat) max(data.main.lat)]+space*[-1 1])
-colormap('turbo')
-hhh = colorbar; set(get(hhh,'ylabel'),'String','$\frac{m^2}{s^2}$','FontSize',16,'Interpreter','latex');
-xlabel('Longitude')
-ylabel('Latitude')
-title('Grid 03min')
-box on
-grid on
-set(gca, 'Layer', 'top')
-sgtitle('Gravity Potential Data From XGM2019 Model')
-
-clear space hhh
+% plot_result(data.valid.lon, data.valid.lat, int.A, diff.A, 20, space, '$A^{-1}l$')
+% plot_result(data.valid.lon, data.valid.lat, int.pinv, diff.pinv, 20, space, 'PINV')
+if strcmp(METHOD, 'Cholesky')
+    plot_result(data.valid.lon, data.valid.lat, int.chol, diff.chol, 20, space, 'Cholesky')
+elseif strcmp(METHOD, 'TSVD')
+        plot_result(data.valid.lon, data.valid.lat, int.tsvd, diff.tsvd, 20, space, 'TSVD')
+elseif strcmp(METHOD, 'VCE')
+    plot_result(data.valid.lon, data.valid.lat, int.vce, diff.vce, 20, space, 'VCE')
+elseif strcmp(METHOD, 'GCV')
+    plot_result(data.valid.lon, data.valid.lat, int.tikh_gcv, diff.tikh_gcv, 20, space, 'Tikhonov (GCV)')
+elseif strcmp(METHOD, 'L-Curve')
+    plot_result(data.valid.lon, data.valid.lat, int.tikh_lcurve, diff.tikh_lcurve, 20, space, 'Tikhonov (L-Curve)')
+end
 
 %% Export for Plots in Python
 
-main_data = [data.main.lon data.main.lat data.main.v];
-valid_data = [data.valid.lon data.valid.lat data.valid.v];
-int_chol = int.chol;
-int_tsvd = int.tsvd;
-int_vce = int.vce;
-diff_chol = diff.chol;
-diff_tsvd = diff.tsvd;
-diff_vce = diff.vce;
+if SAVE_OUTPUTS
 
-% save('OutputNoise_AbelPoisson.mat', 'main_data', 'valid_data', 'int_chol', 'int_tsvd', 'int_vce', 'diff_chol', 'diff_tsvd', 'diff_vce')
-% save('OutputNoise_Singularity.mat', 'main_data', 'valid_data', 'int_chol', 'int_tsvd', 'int_vce', 'diff_chol', 'diff_tsvd', 'diff_vce')
-% save('OutputNoise_Logarithmic.mat', 'main_data', 'valid_data', 'int_chol', 'int_tsvd', 'int_vce', 'diff_chol', 'diff_tsvd', 'diff_vce')
+    main_data = [data.main.lon data.main.lat data.main.U]; 
+    valid_data = [data.valid.lon data.valid.lat data.valid.U];
+    
+    h_dec1 = table2array(cv.dec1);
+    h_dec2 = table2array(cv.dec2);
+    h_dec3 = table2array(cv.dec3);
 
-% int_A = int.A;
-% diff_A = diff.A;
-% save('NoRegResult.mat', 'int_A', 'diff_A')
+    if strcmp(NOISE, 'Yes')
+        noise_str = "wn_";
+    else
+        noise_str = "";
+    end
+    
+    if strcmp(METHOD, 'Cholesky')
+        int_chol = int.chol;
+        diff_chol = diff.chol;
+        save("Output_"+noise_str+KERNEL+"_"+METHOD+".mat", 'main_data', 'valid_data', 'int_chol', 'diff_chol', ...
+            'h_dec1', 'h_dec2', 'h_dec3', 'h')
+    elseif strcmp(METHOD, 'TSVD')
+        int_tsvd = int.tsvd;
+        diff_tsvd = diff.tsvd;
+        save("Output_"+noise_str+KERNEL+"_"+METHOD+".mat", 'main_data', 'valid_data', 'int_tsvd', 'diff_tsvd', ...
+            'h_dec1', 'h_dec2', 'h_dec3','k', 'h')
+    elseif strcmp(METHOD, 'VCE')
+        int_vce = int.vce;
+        diff_vce = diff.vce;
+        lambda = alpha_vce;
+        save("Output_"+noise_str+KERNEL+"_"+METHOD+".mat", 'main_data', 'valid_data', 'int_vce', 'diff_vce', ...
+            'h_dec1', 'h_dec2', 'h_dec3', 'lambda', 'h')
+    elseif strcmp(METHOD, 'GCV')
+        int_gcv = int.tikh_gcv;
+        diff_gcv = diff.tikh_gcv;
+        lambda = reg_min;
+        save("Output_"+noise_str+KERNEL+"_"+METHOD+".mat", 'main_data', 'valid_data', 'int_gcv', 'diff_gcv', ...
+            'h_dec1', 'h_dec2', 'h_dec3', 'lambda', 'h')
+    elseif strcmp(METHOD, 'L-Curve')
+        int_lcurve = int.tikh_lcurve;
+        diff_lcurve = diff.tikh_lcurve;
+        lambda = reg_corner;
+        save("Output_"+noise_str+KERNEL+"_"+METHOD+".mat", 'main_data', 'valid_data', 'int_lcurve', 'diff_lcurve', ...
+            'h_dec1', 'h_dec2', 'h_dec3', 'lambda')
+    end
+
+end
+
+int_A = int.A;
+diff_A = diff.A;
+main_data = [data.main.lon data.main.lat data.main.U]; 
+valid_data = [data.valid.lon data.valid.lat data.valid.U];
+save('NoRegResult.mat', 'main_data', 'valid_data', 'int_A', 'diff_A')
+
+%% Finish Sound
+
+% fs = 44100;                    
+% t = 0:1/fs:1;                   
+% frequency = 440;                 
+% signal = sin(2*pi*frequency*t);
+% sound(signal, fs);

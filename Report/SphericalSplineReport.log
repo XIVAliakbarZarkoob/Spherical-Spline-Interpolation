@@ -1,4 +1,4 @@
-This is XeTeX, Version 3.141592653-2.6-0.999995 (TeX Live 2023/Debian) (preloaded format=xelatex 2024.6.9)  5 JAN 2025 20:30
+This is XeTeX, Version 3.141592653-2.6-0.999995 (TeX Live 2023/Debian) (preloaded format=xelatex 2024.6.9)  26 JAN 2025 17:29
 entering extended mode
  restricted \write18 enabled.
  %&-line parsing enabled.
@@ -414,63 +414,80 @@ Package uniquecounter Info: New unique counter `rerunfilecheck' on input line 2
 )
 \Hy@SectionHShift=\skip62
 )
+(/usr/share/texlive/texmf-dist/tex/latex/makecell/makecell.sty
+Package: makecell 2009/08/03 V0.1e Managing of Tab Column Heads and Cells
+
+(/usr/share/texlive/texmf-dist/tex/latex/tools/array.sty
+Package: array 2023/10/16 v2.5g Tabular extension package (FMi)
+\col@sep=\dimen168
+\ar@mcellbox=\box56
+\extrarowheight=\dimen169
+\NC@list=\toks31
+\extratabsurround=\skip63
+\backup@length=\skip64
+\ar@cellbox=\box57
+)
+\rotheadsize=\dimen170
+\c@nlinenum=\count293
+\TeXr@lab=\toks32
+)
 (/usr/share/texlive/texmf-dist/tex/latex/geometry/geometry.sty
 Package: geometry 2020/01/02 v5.9 Page Geometry
 
 (/usr/share/texlive/texmf-dist/tex/generic/iftex/ifvtex.sty
 Package: ifvtex 2019/10/25 v1.7 ifvtex legacy package. Use iftex instead.
 )
-\Gm@cnth=\count293
-\Gm@cntv=\count294
-\c@Gm@tempcnt=\count295
-\Gm@bindingoffset=\dimen168
-\Gm@wd@mp=\dimen169
-\Gm@odd@mp=\dimen170
-\Gm@even@mp=\dimen171
-\Gm@layoutwidth=\dimen172
-\Gm@layoutheight=\dimen173
-\Gm@layouthoffset=\dimen174
-\Gm@layoutvoffset=\dimen175
-\Gm@dimlist=\toks31
+\Gm@cnth=\count294
+\Gm@cntv=\count295
+\c@Gm@tempcnt=\count296
+\Gm@bindingoffset=\dimen171
+\Gm@wd@mp=\dimen172
+\Gm@odd@mp=\dimen173
+\Gm@even@mp=\dimen174
+\Gm@layoutwidth=\dimen175
+\Gm@layoutheight=\dimen176
+\Gm@layouthoffset=\dimen177
+\Gm@layoutvoffset=\dimen178
+\Gm@dimlist=\toks33
 )
 (/usr/share/texlive/texmf-dist/tex/latex/l3backend/l3backend-xetex.def
 File: l3backend-xetex.def 2024-01-04 L3 backend support: XeTeX
-\g__graphics_track_int=\count296
-\l__pdf_internal_box=\box56
-\g__pdf_backend_object_int=\count297
-\g__pdf_backend_annotation_int=\count298
-\g__pdf_backend_link_int=\count299
+\g__graphics_track_int=\count297
+\l__pdf_internal_box=\box58
+\g__pdf_backend_object_int=\count298
+\g__pdf_backend_annotation_int=\count299
+\g__pdf_backend_link_int=\count300
 )
 (./SphericalSplineReport.aux)
 \openout1 = `SphericalSplineReport.aux'.
 
-LaTeX Font Info:    Checking defaults for OML/cmm/m/it on input line 16.
-LaTeX Font Info:    ... okay on input line 16.
-LaTeX Font Info:    Checking defaults for OMS/cmsy/m/n on input line 16.
-LaTeX Font Info:    ... okay on input line 16.
-LaTeX Font Info:    Checking defaults for OT1/cmr/m/n on input line 16.
-LaTeX Font Info:    ... okay on input line 16.
-LaTeX Font Info:    Checking defaults for T1/cmr/m/n on input line 16.
-LaTeX Font Info:    ... okay on input line 16.
-LaTeX Font Info:    Checking defaults for TS1/cmr/m/n on input line 16.
+LaTeX Font Info:    Checking defaults for OML/cmm/m/it on input line 17.
+LaTeX Font Info:    ... okay on input line 17.
+LaTeX Font Info:    Checking defaults for OMS/cmsy/m/n on input line 17.
+LaTeX Font Info:    ... okay on input line 17.
+LaTeX Font Info:    Checking defaults for OT1/cmr/m/n on input line 17.
+LaTeX Font Info:    ... okay on input line 17.
+LaTeX Font Info:    Checking defaults for T1/cmr/m/n on input line 17.
+LaTeX Font Info:    ... okay on input line 17.
+LaTeX Font Info:    Checking defaults for TS1/cmr/m/n on input line 17.
 LaTeX Font Info:    Trying to load font information for TS1+cmr on input line 1
-6.
+7.
 
 (/usr/share/texlive/texmf-dist/tex/latex/base/ts1cmr.fd
 File: ts1cmr.fd 2023/04/13 v2.5m Standard LaTeX font definitions
 )
-LaTeX Font Info:    ... okay on input line 16.
-LaTeX Font Info:    Checking defaults for TU/lmr/m/n on input line 16.
-LaTeX Font Info:    ... okay on input line 16.
-LaTeX Font Info:    Checking defaults for OMX/cmex/m/n on input line 16.
-LaTeX Font Info:    ... okay on input line 16.
-LaTeX Font Info:    Checking defaults for U/cmr/m/n on input line 16.
-LaTeX Font Info:    ... okay on input line 16.
-LaTeX Font Info:    Checking defaults for PD1/pdf/m/n on input line 16.
-LaTeX Font Info:    ... okay on input line 16.
-LaTeX Font Info:    Checking defaults for PU/pdf/m/n on input line 16.
-LaTeX Font Info:    ... okay on input line 16.
-Package hyperref Info: Link coloring OFF on input line 16.
+LaTeX Font Info:    ... okay on input line 17.
+LaTeX Font Info:    Checking defaults for TU/lmr/m/n on input line 17.
+LaTeX Font Info:    ... okay on input line 17.
+LaTeX Font Info:    Checking defaults for OMX/cmex/m/n on input line 17.
+LaTeX Font Info:    ... okay on input line 17.
+LaTeX Font Info:    Checking defaults for U/cmr/m/n on input line 17.
+LaTeX Font Info:    ... okay on input line 17.
+LaTeX Font Info:    Checking defaults for PD1/pdf/m/n on input line 17.
+LaTeX Font Info:    ... okay on input line 17.
+LaTeX Font Info:    Checking defaults for PU/pdf/m/n on input line 17.
+LaTeX Font Info:    ... okay on input line 17.
+Package hyperref Info: Link coloring OFF on input line 17.
 
 (./SphericalSplineReport.out) (./SphericalSplineReport.out)
 \@outlinefile=\write4
@@ -518,12 +535,12 @@ File: Fanni_Alt_BW_Logo.png Graphic file (type bmp)
 [1
 
 ]
-LaTeX Font Info:    Trying to load font information for U+msa on input line 61.
+LaTeX Font Info:    Trying to load font information for U+msa on input line 62.
 
  (/usr/share/texlive/texmf-dist/tex/latex/amsfonts/umsa.fd
 File: umsa.fd 2013/01/14 v3.01 AMS symbols A
 )
-LaTeX Font Info:    Trying to load font information for U+msb on input line 61.
+LaTeX Font Info:    Trying to load font information for U+msb on input line 62.
 
 
 (/usr/share/texlive/texmf-dist/tex/latex/amsfonts/umsb.fd
@@ -538,17 +555,13 @@ Package fancyhdr Warning: \headheight is too small (12.0pt):
 (fancyhdr)                \addtolength{\topmargin}{-2.49998pt}.
 
 [1]
-File: ../Outputs/MainData.pdf Graphic file (type pdf)
-<use ../Outputs/MainData.pdf>
+File: ../Outputs/Plots/MainData.pdf Graphic file (type pdf)
+<use ../Outputs/Plots/MainData.pdf>
 
-Overfull \hbox (2.27618pt too wide) in paragraph at lines 141--142
+Overfull \hbox (2.27618pt too wide) in paragraph at lines 142--143
  [][] 
  []
 
-File: ../Outputs/PicardPlot.pdf Graphic file (type pdf)
-<use ../Outputs/PicardPlot.pdf>
-File: ../Outputs/NoRegResult.pdf Graphic file (type pdf)
-<use ../Outputs/NoRegResult.pdf>
 
 Package fancyhdr Warning: \headheight is too small (12.0pt): 
 (fancyhdr)                Make it at least 14.49998pt, for example:
@@ -558,27 +571,32 @@ Package fancyhdr Warning: \headheight is too small (12.0pt):
 (fancyhdr)                \addtolength{\topmargin}{-2.49998pt}.
 
 [2]
-File: ../Outputs/AbelPoisson_Cholesky.pdf Graphic file (type pdf)
-<use ../Outputs/AbelPoisson_Cholesky.pdf>
+File: ../Outputs/Plots/PicardPlot.pdf Graphic file (type pdf)
+<use ../Outputs/Plots/PicardPlot.pdf>
+File: ../Outputs/Plots/NoRegResult.pdf Graphic file (type pdf)
+<use ../Outputs/Plots/NoRegResult.pdf>
 
-Overfull \hbox (2.27618pt too wide) in paragraph at lines 196--197
- [][] 
- []
-
-File: ../Outputs/AbelPoisson_TSVD.pdf Graphic file (type pdf)
-<use ../Outputs/AbelPoisson_TSVD.pdf>
-
-Overfull \hbox (2.27618pt too wide) in paragraph at lines 203--204
+Overfull \hbox (20.60817pt too wide) in paragraph at lines 197--209
  [][] 
  []
 
 
 LaTeX Warning: `!h' float specifier changed to `!ht'.
 
-File: ../Outputs/AbelPoisson_VCE.pdf Graphic file (type pdf)
-<use ../Outputs/AbelPoisson_VCE.pdf>
+File: ../Outputs/Plots/Plot_Abel-Poisson_Cholesky.pdf Graphic file (type pdf)
+<use ../Outputs/Plots/Plot_Abel-Poisson_Cholesky.pdf>
 
-Overfull \hbox (2.27618pt too wide) in paragraph at lines 210--211
+Overfull \hbox (2.27618pt too wide) in paragraph at lines 213--214
+ [][] 
+ []
+
+
+LaTeX Warning: `!h' float specifier changed to `!ht'.
+
+File: ../Outputs/Plots/Plot_Abel-Poisson_TSVD.pdf Graphic file (type pdf)
+<use ../Outputs/Plots/Plot_Abel-Poisson_TSVD.pdf>
+
+Overfull \hbox (2.27618pt too wide) in paragraph at lines 220--221
  [][] 
  []
 
@@ -594,13 +612,6 @@ Package fancyhdr Warning: \headheight is too small (12.0pt):
 (fancyhdr)                \addtolength{\topmargin}{-2.49998pt}.
 
 [3]
-File: ../Outputs/Singularity_Cholesky.pdf Graphic file (type pdf)
-<use ../Outputs/Singularity_Cholesky.pdf>
-
-Overfull \hbox (2.27618pt too wide) in paragraph at lines 238--239
- [][] 
- []
-
 
 Package fancyhdr Warning: \headheight is too small (12.0pt): 
 (fancyhdr)                Make it at least 14.49998pt, for example:
@@ -610,41 +621,49 @@ Package fancyhdr Warning: \headheight is too small (12.0pt):
 (fancyhdr)                \addtolength{\topmargin}{-2.49998pt}.
 
 [4]
-File: ../Outputs/Singularity_TSVD.pdf Graphic file (type pdf)
-<use ../Outputs/Singularity_TSVD.pdf>
+File: ../Outputs/Plots/Plot_Abel-Poisson_GCV.pdf Graphic file (type pdf)
+<use ../Outputs/Plots/Plot_Abel-Poisson_GCV.pdf>
 
-Overfull \hbox (2.27618pt too wide) in paragraph at lines 247--248
+Overfull \hbox (2.27618pt too wide) in paragraph at lines 229--230
  [][] 
  []
 
-File: ../Outputs/Singularity_VCE.pdf Graphic file (type pdf)
-<use ../Outputs/Singularity_VCE.pdf>
+File: ../Outputs/Plots/Plot_Abel-Poisson_L-Curve.pdf Graphic file (type pdf)
+<use ../Outputs/Plots/Plot_Abel-Poisson_L-Curve.pdf>
 
-Overfull \hbox (2.27618pt too wide) in paragraph at lines 254--255
+Overfull \hbox (2.27618pt too wide) in paragraph at lines 236--237
  [][] 
  []
 
-File: ../Outputs/Logarithmic_Cholesky.pdf Graphic file (type pdf)
-<use ../Outputs/Logarithmic_Cholesky.pdf>
+File: ../Outputs/Plots/Plot_Abel-Poisson_VCE.pdf Graphic file (type pdf)
+<use ../Outputs/Plots/Plot_Abel-Poisson_VCE.pdf>
 
-Overfull \hbox (2.27618pt too wide) in paragraph at lines 281--282
+Overfull \hbox (2.27618pt too wide) in paragraph at lines 243--244
  [][] 
  []
 
-File: ../Outputs/Logarithmic_TSVD.pdf Graphic file (type pdf)
-<use ../Outputs/Logarithmic_TSVD.pdf>
 
-Overfull \hbox (2.27618pt too wide) in paragraph at lines 288--289
+Overfull \hbox (20.60817pt too wide) in paragraph at lines 257--269
  [][] 
  []
 
 
 LaTeX Warning: `!h' float specifier changed to `!ht'.
 
-File: ../Outputs/Logarithmic_VCE.pdf Graphic file (type pdf)
-<use ../Outputs/Logarithmic_VCE.pdf>
+File: ../Outputs/Plots/Plot_Singularity_Cholesky.pdf Graphic file (type pdf)
+<use ../Outputs/Plots/Plot_Singularity_Cholesky.pdf>
 
-Overfull \hbox (2.27618pt too wide) in paragraph at lines 295--296
+Overfull \hbox (2.27618pt too wide) in paragraph at lines 274--275
+ [][] 
+ []
+
+
+LaTeX Warning: `!h' float specifier changed to `!ht'.
+
+File: ../Outputs/Plots/Plot_Singularity_TSVD.pdf Graphic file (type pdf)
+<use ../Outputs/Plots/Plot_Singularity_TSVD.pdf>
+
+Overfull \hbox (2.27618pt too wide) in paragraph at lines 281--282
  [][] 
  []
 
@@ -662,13 +681,6 @@ Package fancyhdr Warning: \headheight is too small (12.0pt):
 [5
 
 ]
-File: ../Outputs/AbelPoisson_Cholesky_Noise.pdf Graphic file (type pdf)
-<use ../Outputs/AbelPoisson_Cholesky_Noise.pdf>
-
-Overfull \hbox (2.27618pt too wide) in paragraph at lines 323--324
- [][] 
- []
-
 
 Package fancyhdr Warning: \headheight is too small (12.0pt): 
 (fancyhdr)                Make it at least 14.49998pt, for example:
@@ -678,26 +690,54 @@ Package fancyhdr Warning: \headheight is too small (12.0pt):
 (fancyhdr)                \addtolength{\topmargin}{-2.49998pt}.
 
 [6]
-File: ../Outputs/AbelPoisson_TSVD_Noise.pdf Graphic file (type pdf)
-<use ../Outputs/AbelPoisson_TSVD_Noise.pdf>
+File: ../Outputs/Plots/Plot_Singularity_GCV.pdf Graphic file (type pdf)
+<use ../Outputs/Plots/Plot_Singularity_GCV.pdf>
 
-Overfull \hbox (2.27618pt too wide) in paragraph at lines 332--333
+Overfull \hbox (2.27618pt too wide) in paragraph at lines 290--291
  [][] 
  []
 
-File: ../Outputs/AbelPoisson_VCE_Noise.pdf Graphic file (type pdf)
-<use ../Outputs/AbelPoisson_VCE_Noise.pdf>
+File: ../Outputs/Plots/Plot_Singularity_L-Curve.pdf Graphic file (type pdf)
+<use ../Outputs/Plots/Plot_Singularity_L-Curve.pdf>
 
-Overfull \hbox (2.27618pt too wide) in paragraph at lines 339--340
+Overfull \hbox (2.27618pt too wide) in paragraph at lines 297--298
  [][] 
  []
 
-File: ../Outputs/Singularity_Cholesky_Noise.pdf Graphic file (type pdf)
-<use ../Outputs/Singularity_Cholesky_Noise.pdf>
+File: ../Outputs/Plots/Plot_Singularity_VCE.pdf Graphic file (type pdf)
+<use ../Outputs/Plots/Plot_Singularity_VCE.pdf>
 
-Overfull \hbox (2.27618pt too wide) in paragraph at lines 366--367
+Overfull \hbox (2.27618pt too wide) in paragraph at lines 304--305
  [][] 
  []
+
+
+Overfull \hbox (20.60817pt too wide) in paragraph at lines 318--330
+ [][] 
+ []
+
+
+LaTeX Warning: `!h' float specifier changed to `!ht'.
+
+File: ../Outputs/Plots/Plot_Logarithmic_Cholesky.pdf Graphic file (type pdf)
+<use ../Outputs/Plots/Plot_Logarithmic_Cholesky.pdf>
+
+Overfull \hbox (2.27618pt too wide) in paragraph at lines 334--335
+ [][] 
+ []
+
+
+LaTeX Warning: `!h' float specifier changed to `!ht'.
+
+File: ../Outputs/Plots/Plot_Logarithmic_TSVD.pdf Graphic file (type pdf)
+<use ../Outputs/Plots/Plot_Logarithmic_TSVD.pdf>
+
+Overfull \hbox (2.27618pt too wide) in paragraph at lines 341--342
+ [][] 
+ []
+
+
+LaTeX Warning: `!h' float specifier changed to `!ht'.
 
 
 Package fancyhdr Warning: \headheight is too small (12.0pt): 
@@ -710,27 +750,6 @@ Package fancyhdr Warning: \headheight is too small (12.0pt):
 [7
 
 ]
-File: ../Outputs/Singularity_TSVD_Noise.pdf Graphic file (type pdf)
-<use ../Outputs/Singularity_TSVD_Noise.pdf>
-
-Overfull \hbox (2.27618pt too wide) in paragraph at lines 375--376
- [][] 
- []
-
-File: ../Outputs/Singularity_VCE_Noise.pdf Graphic file (type pdf)
-<use ../Outputs/Singularity_VCE_Noise.pdf>
-
-Overfull \hbox (2.27618pt too wide) in paragraph at lines 382--383
- [][] 
- []
-
-File: ../Outputs/Logarithmic_Cholesky_Noise.pdf Graphic file (type pdf)
-<use ../Outputs/Logarithmic_Cholesky_Noise.pdf>
-
-Overfull \hbox (2.27618pt too wide) in paragraph at lines 409--410
- [][] 
- []
-
 
 Package fancyhdr Warning: \headheight is too small (12.0pt): 
 (fancyhdr)                Make it at least 14.49998pt, for example:
@@ -739,20 +758,25 @@ Package fancyhdr Warning: \headheight is too small (12.0pt):
 
 (fancyhdr)                \addtolength{\topmargin}{-2.49998pt}.
 
-[8
+[8]
+File: ../Outputs/Plots/Plot_Logarithmic_GCV.pdf Graphic file (type pdf)
+<use ../Outputs/Plots/Plot_Logarithmic_GCV.pdf>
 
-]
-File: ../Outputs/Logarithmic_TSVD_Noise.pdf Graphic file (type pdf)
-<use ../Outputs/Logarithmic_TSVD_Noise.pdf>
-
-Overfull \hbox (2.27618pt too wide) in paragraph at lines 418--419
+Overfull \hbox (2.27618pt too wide) in paragraph at lines 350--351
  [][] 
  []
 
-File: ../Outputs/Logarithmic_VCE_Noise.pdf Graphic file (type pdf)
-<use ../Outputs/Logarithmic_VCE_Noise.pdf>
+File: ../Outputs/Plots/Plot_Logarithmic_L-Curve.pdf Graphic file (type pdf)
+<use ../Outputs/Plots/Plot_Logarithmic_L-Curve.pdf>
 
-Overfull \hbox (2.27618pt too wide) in paragraph at lines 425--426
+Overfull \hbox (2.27618pt too wide) in paragraph at lines 357--358
+ [][] 
+ []
+
+File: ../Outputs/Plots/Plot_Logarithmic_VCE.pdf Graphic file (type pdf)
+<use ../Outputs/Plots/Plot_Logarithmic_VCE.pdf>
+
+Overfull \hbox (2.27618pt too wide) in paragraph at lines 364--365
  [][] 
  []
 
@@ -766,21 +790,124 @@ Package fancyhdr Warning: \headheight is too small (12.0pt):
 
 [9
 
-] (./SphericalSplineReport.aux)
+]
+File: ../Outputs/Plots/DataWithNoise.pdf Graphic file (type pdf)
+<use ../Outputs/Plots/DataWithNoise.pdf>
+
+Overfull \hbox (20.60817pt too wide) in paragraph at lines 386--398
+ [][] 
+ []
+
+File: ../Outputs/Plots/Plot_wn_Abel-Poisson_Cholesky.pdf Graphic file (type pdf
+)
+<use ../Outputs/Plots/Plot_wn_Abel-Poisson_Cholesky.pdf>
+
+Overfull \hbox (2.27618pt too wide) in paragraph at lines 403--404
+ [][] 
+ []
+
+File: ../Outputs/Plots/Plot_wn_Abel-Poisson_TSVD.pdf Graphic file (type pdf)
+<use ../Outputs/Plots/Plot_wn_Abel-Poisson_TSVD.pdf>
+
+Overfull \hbox (2.27618pt too wide) in paragraph at lines 410--411
+ [][] 
+ []
+
+
+LaTeX Warning: `!h' float specifier changed to `!ht'.
+
+File: ../Outputs/Plots/Plot_wn_Abel-Poisson_GCV.pdf Graphic file (type pdf)
+<use ../Outputs/Plots/Plot_wn_Abel-Poisson_GCV.pdf>
+
+Overfull \hbox (2.27618pt too wide) in paragraph at lines 418--419
+ [][] 
+ []
+
+
+LaTeX Warning: `!h' float specifier changed to `!ht'.
+
+File: ../Outputs/Plots/Plot_wn_Abel-Poisson_L-Curve.pdf Graphic file (type pdf)
+
+<use ../Outputs/Plots/Plot_wn_Abel-Poisson_L-Curve.pdf>
+
+Overfull \hbox (2.27618pt too wide) in paragraph at lines 425--426
+ [][] 
+ []
+
+
+LaTeX Warning: `!h' float specifier changed to `!ht'.
+
+
+Package fancyhdr Warning: \headheight is too small (12.0pt): 
+(fancyhdr)                Make it at least 14.49998pt, for example:
+(fancyhdr)                \setlength{\headheight}{14.49998pt}.
+(fancyhdr)                You might also make \topmargin smaller to compensate:
+
+(fancyhdr)                \addtolength{\topmargin}{-2.49998pt}.
+
+[10]
+
+Package fancyhdr Warning: \headheight is too small (12.0pt): 
+(fancyhdr)                Make it at least 14.49998pt, for example:
+(fancyhdr)                \setlength{\headheight}{14.49998pt}.
+(fancyhdr)                You might also make \topmargin smaller to compensate:
+
+(fancyhdr)                \addtolength{\topmargin}{-2.49998pt}.
+
+[11]
+File: ../Outputs/Plots/Plot_wn_Abel-Poisson_VCE.pdf Graphic file (type pdf)
+<use ../Outputs/Plots/Plot_wn_Abel-Poisson_VCE.pdf>
+
+Overfull \hbox (2.27618pt too wide) in paragraph at lines 434--435
+ [][] 
+ []
+
+File: ../Outputs/Plots/CV_Abel-Poisson_TSVD.pdf Graphic file (type pdf)
+<use ../Outputs/Plots/CV_Abel-Poisson_TSVD.pdf>
+File: ../Outputs/Plots/CV_Singularity_TSVD.pdf Graphic file (type pdf)
+<use ../Outputs/Plots/CV_Singularity_TSVD.pdf>
+
+LaTeX Warning: `!h' float specifier changed to `!ht'.
+
+File: ../Outputs/Plots/CV_Logarithmic_TSVD.pdf Graphic file (type pdf)
+<use ../Outputs/Plots/CV_Logarithmic_TSVD.pdf>
+
+LaTeX Warning: `!h' float specifier changed to `!ht'.
+
+
+Package fancyhdr Warning: \headheight is too small (12.0pt): 
+(fancyhdr)                Make it at least 14.49998pt, for example:
+(fancyhdr)                \setlength{\headheight}{14.49998pt}.
+(fancyhdr)                You might also make \topmargin smaller to compensate:
+
+(fancyhdr)                \addtolength{\topmargin}{-2.49998pt}.
+
+[12
+
+]
+
+Package fancyhdr Warning: \headheight is too small (12.0pt): 
+(fancyhdr)                Make it at least 14.49998pt, for example:
+(fancyhdr)                \setlength{\headheight}{14.49998pt}.
+(fancyhdr)                You might also make \topmargin smaller to compensate:
+
+(fancyhdr)                \addtolength{\topmargin}{-2.49998pt}.
+
+[13] (./SphericalSplineReport.aux)
  ***********
 LaTeX2e <2023-11-01> patch level 1
 L3 programming layer <2024-01-22>
  ***********
 Package rerunfilecheck Info: File `SphericalSplineReport.out' has not changed.
-(rerunfilecheck)             Checksum: A64458D4CD57FB723E0C6BF54BD7098E;1192.
+(rerunfilecheck)             Checksum: 2B87C8E415DDFF0E4ECF153DCBA79B41;929.
  ) 
 Here is how much of TeX's memory you used:
- 12829 strings out of 474878
- 217113 string characters out of 5762517
+ 13120 strings out of 474878
+ 224213 string characters out of 5762517
  1936627 words of memory out of 5000000
- 34633 multiletter control sequences out of 15000+600000
- 564869 words of font info for 75 fonts, out of 8000000 for 9000
+ 34908 multiletter control sequences out of 15000+600000
+ 564885 words of font info for 77 fonts, out of 8000000 for 9000
  1348 hyphenation exceptions out of 8191
- 94i,12n,93p,864b,364s stack positions out of 10000i,1000n,20000p,200000b,200000s
+ 94i,15n,93p,864b,350s stack positions out of 10000i,1000n,20000p,200000b,200000s
 
-Output written on SphericalSplineReport.pdf (10 pages).
+Output written on SphericalSplineReport.pdf (14 pages).
