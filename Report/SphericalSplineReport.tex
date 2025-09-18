@@ -6,9 +6,10 @@
 \usepackage{xcolor}
 \usepackage{amsmath}
 \usepackage{svg}
-\usepackage{hyperref}
+\usepackage[colorlinks=true, urlcolor=blue]{hyperref}
 \usepackage{graphicx}
 \usepackage{makecell}
+\usepackage{fontawesome5}
 \usepackage[a4paper, margin=1in]{geometry}
 \pagestyle{fancy}
 \lhead{Spherical Spline Implementation}
@@ -29,7 +30,8 @@
 			
 			\vspace{3cm}
 			
-			\huge \textbf{Spherical Spline Implementation}
+			\huge \textbf{Spherical Spline Implementation} \\
+			\large \href{https://github.com/XIVAliakbarZarkoob/Spherical-Spline-Interpolation}{\faGithub}
 			
 			\vspace{3cm}
 			
@@ -39,7 +41,7 @@
 			\vspace{2cm}
 			
 			\Large \textbf{Professor:}\\
-			Dr. Abdolreza Safari
+			Dr. AbdolReza Safari
 			
 			\vfill
 			
@@ -55,7 +57,7 @@
 	
 	Traditional Euclidean methods for localized approximation are often inadequate for global problems on the sphere, such as gravity field determination. The fundamental challenge lies in the lack of a differential mapping that can transform the entire sphere into a bounded planar region without distortion. This limitation has driven the development of approximation methods specifically tailored to spherical domains. Among these, spherical spline interpolation stands out for its ability to model global phenomena effectively while maintaining desirable mathematical properties, such as smoothness and stability.
 	
-	This report is focused on spherical spline interpolation for gravity potential data, where three distinct kernels (Abel-Poisson, Singularity, and Logarithmic) are employed for interpolating data from a global 6-degree regular grid to a finer 3-degree grid.
+	This project is focused on spherical spline interpolation for gravity potential data, where three distinct kernels (Abel-Poisson, Singularity, and Logarithmic) are employed for interpolating data from a global 6-degree regular grid to a finer 3-degree grid.
 		
 	\section{Implementation Steps}
 	
@@ -171,7 +173,7 @@
 		\label{fig:NoRegResult}
 	\end{figure}
 	
-	Regularization methods used are TSVD and First order Tikhonov (FOT) With regularization parameter calculated from GCV, L-Curve and VCE methods. Cholesky decomposition is also used, which is a method for cases with numerical problems.
+	Regularization methods used are TSVD and Zero order Tikhonov (ZOT) With regularization parameter calculated from GCV, L-Curve and VCE methods. Cholesky decomposition is also used, which is a method for cases with numerical problems.
 	
 
 	
@@ -195,7 +197,7 @@
 		\vspace{0.2cm}
 		\renewcommand{\arraystretch}{2}
 		\begin{tabular}{c|c|c|c|c|c}
-			\textbf{Method} & Cholesky & TSVD & GCV (FOT) & L-Curve (FOT) & VCE (FOT) \\
+			\textbf{Method} & Cholesky & TSVD & GCV (ZOT) & L-Curve (ZOT) & VCE (ZOT) \\
 			\hline 
 			\makecell{\textbf{Regularization} \\ \textbf{Parameter}} & --- & 1010 & $4.12*10^{-7}$ & $8.57*10^{-5}$ & $2.16*10^{-8}$ \\
 			\hline 
@@ -227,21 +229,21 @@
 	\begin{figure}[h!]
 		\centering
 		\includegraphics[width=16cm]{../Outputs/Plots/Plot_Abel-Poisson_GCV.pdf}
-		\caption{Results of Abel-Poisson kernel with GCV (FOT) method.}
+		\caption{Results of Abel-Poisson kernel with GCV (ZOT) method.}
 		\label{fig:Abel-Poisson_GCV}
 	\end{figure}
 	
 	\begin{figure}[h!]
 		\centering
 		\includegraphics[width=16cm]{../Outputs/Plots/Plot_Abel-Poisson_L-Curve.pdf}
-		\caption{Results of Abel-Poisson kernel with L-Curve (FOT) method.}
+		\caption{Results of Abel-Poisson kernel with L-Curve (ZOT) method.}
 		\label{fig:Abel-Poisson_L-Curve}
 	\end{figure}
 
 	\begin{figure}[h!]
 		\centering
 		\includegraphics[width=16cm]{../Outputs/Plots/Plot_Abel-Poisson_VCE.pdf}
-		\caption{Results of Abel-Poisson kernel with VCE (FOT) method.}
+		\caption{Results of Abel-Poisson kernel with VCE (ZOT) method.}
 		\label{fig:Abel-Poisson_VCE}
 	\end{figure}
 	
@@ -255,7 +257,7 @@
 		\vspace{0.2cm}
 		\renewcommand{\arraystretch}{2}
 		\begin{tabular}{c|c|c|c|c|c}
-			\textbf{Method} & Cholesky & TSVD & GCV (FOT) & L-Curve (FOT) & VCE (FOT) \\
+			\textbf{Method} & Cholesky & TSVD & GCV (ZOT) & L-Curve (ZOT) & VCE (ZOT) \\
 			\hline 
 			\makecell{\textbf{Regularization} \\ \textbf{Parameter}} & --- & 1005 & $4.26*10^{-6}$ & $1.43*10^{-4}$ & $3.27*10^{-8}$ \\
 			\hline 
@@ -288,21 +290,21 @@
 	\begin{figure}[h!]
 		\centering
 		\includegraphics[width=16cm]{../Outputs/Plots/Plot_Singularity_GCV.pdf}
-		\caption{Results of Singularity kernel with GCV (FOT) method.}
+		\caption{Results of Singularity kernel with GCV (ZOT) method.}
 		\label{fig:Singularity_GCV}
 	\end{figure}
 	
 	\begin{figure}[h!]
 		\centering
 		\includegraphics[width=16cm]{../Outputs/Plots/Plot_Singularity_L-Curve.pdf}
-		\caption{Results of Singularity kernel with L-Curve (FOT) method.}
+		\caption{Results of Singularity kernel with L-Curve (ZOT) method.}
 		\label{fig:Singularity_L-Curve}
 	\end{figure}
 	
 	\begin{figure}[h!]
 		\centering
 		\includegraphics[width=16cm]{../Outputs/Plots/Plot_Singularity_VCE.pdf}
-		\caption{Results of Singularity kernel with VCE (FOT) method.}
+		\caption{Results of Singularity kernel with VCE (ZOT) method.}
 		\label{fig:Singularity_VCE}
 	\end{figure}
 	
@@ -316,7 +318,7 @@
 		\vspace{0.2cm}
 		\renewcommand{\arraystretch}{2}
 		\begin{tabular}{c|c|c|c|c|c}
-			\textbf{Method} & Cholesky & TSVD & GCV (FOT) & L-Curve (FOT) & VCE (FOT) \\
+			\textbf{Method} & Cholesky & TSVD & GCV (ZOT) & L-Curve (ZOT) & VCE (ZOT) \\
 			\hline 
 			\makecell{\textbf{Regularization} \\ \textbf{Parameter}} & --- & 1010 & $7.96*10^{-7}$ & $1.20*10^{-4}$ & $1.47*10^{-7}$ \\
 			\hline 
@@ -348,28 +350,28 @@
 	\begin{figure}[h!]
 		\centering
 		\includegraphics[width=16cm]{../Outputs/Plots/Plot_Logarithmic_GCV.pdf}
-		\caption{Results of Logarithmic kernel with GCV (FOT) method.}
+		\caption{Results of Logarithmic kernel with GCV (ZOT) method.}
 		\label{fig:Logarithmic_GCV}
 	\end{figure}
 	
 	\begin{figure}[h!]
 		\centering
 		\includegraphics[width=16cm]{../Outputs/Plots/Plot_Logarithmic_L-Curve.pdf}
-		\caption{Results of Logarithmic kernel with L-Curve (FOT) method.}
+		\caption{Results of Logarithmic kernel with L-Curve (ZOT) method.}
 		\label{fig:Logarithmic_L-Curve}
 	\end{figure}
 	
 	\begin{figure}[h!]
 		\centering
 		\includegraphics[width=16cm]{../Outputs/Plots/Plot_Logarithmic_VCE.pdf}
-		\caption{Results of Logarithmic kernel with VCE (FOT) method.}
+		\caption{Results of Logarithmic kernel with VCE (ZOT) method.}
 		\label{fig:Logarithmic_VCE}
 	\end{figure}
 	
 	\subsection{Abel-Poisson With Noise}
 	
 	In this case, white-noise with standard deviation of $200 \frac{m^2}{s^2}$ was added to the input values, the noisy input data is shown in figure \ref{fig:DataWithNoise}. Interpolated and error values are shown in the figures \ref{fig:wn_Abel-Poisson_Chol} to \ref{fig:wn_Abel-Poisson_VCE}. Other results, including parameter $h$, regularization parameter, Mean and norm ($L^2$) of error are shown in table \ref{tab:wn_Abel-Poisson_Results}. As it can be understood from the table, TSVD and Cholesky methods were able to achieve the best results. Furthermore, results from other methods are too smooth and not reliable. 
-	Between FOT methods, VCE could result in better answer than other two methods.
+	Between ZOT methods, VCE could result in better answer than other two methods.
 	
 	\begin{figure}[h!]
 		\centering
@@ -384,7 +386,7 @@
 		\vspace{0.2cm}
 		\renewcommand{\arraystretch}{2}
 		\begin{tabular}{c|c|c|c|c|c}
-			\textbf{Method} & Cholesky & TSVD & GCV (FOT) & L-Curve (FOT) & VCE (FOT) \\
+			\textbf{Method} & Cholesky & TSVD & GCV (ZOT) & L-Curve (ZOT) & VCE (ZOT) \\
 			\hline 
 			\makecell{\textbf{Regularization} \\ \textbf{Parameter}} & --- & 145 & $3.50*10^{-6}$ & $5.33*10^{-4}$ & $2.03*10^{-7}$ \\
 			\hline 
@@ -416,14 +418,14 @@
 	\begin{figure}[h!]
 		\centering
 		\includegraphics[width=16cm]{../Outputs/Plots/Plot_wn_Abel-Poisson_GCV.pdf}
-		\caption{Results of Logarithmic kernel with GCV (FOT) method and added white-noise.}
+		\caption{Results of Logarithmic kernel with GCV (ZOT) method and added white-noise.}
 		\label{fig:wn_Abel-Poisson_GCV}
 	\end{figure}
 	
 	\begin{figure}[h!]
 		\centering
 		\includegraphics[width=16cm]{../Outputs/Plots/Plot_wn_Abel-Poisson_L-Curve.pdf}
-		\caption{Results of Logarithmic kernel with L-Curve (FOT) method and added white-noise.}
+		\caption{Results of Logarithmic kernel with L-Curve (ZOT) method and added white-noise.}
 		\label{fig:wn_Abel-Poisson_L-Curve}
 	\end{figure}
 	
@@ -432,7 +434,7 @@
 	\begin{figure}[h!]
 		\centering
 		\includegraphics[width=16cm]{../Outputs/Plots/Plot_wn_Abel-Poisson_VCE.pdf}
-		\caption{Results of Logarithmic kernel with VCE (FOT) method and added white-noise.}
+		\caption{Results of Logarithmic kernel with VCE (ZOT) method and added white-noise.}
 		\label{fig:wn_Abel-Poisson_VCE}
 	\end{figure}
 	

@@ -40,7 +40,7 @@ data.main.Properties.VariableNames = {'idx', 'lon', 'lat', 'h', 'U'};
 data.valid = readtable('Global_XGM2019_Potential_3-0Deg.dat', 'NumHeaderLines', 32, 'ReadVariableNames', false, 'FileType', 'text');
 data.valid.Properties.VariableNames = {'idx', 'lon', 'lat', 'h', 'U'};
 
-%% Create Data200
+%% (or) Create Data
 
 % function U = Potential(lat, lon, GM, R, min_l, max_l, C_lm, S_lm)
 % 
@@ -65,18 +65,18 @@ data.valid.Properties.VariableNames = {'idx', 'lon', 'lat', 'h', 'U'};
 % CS = gfc_read('WHU-SWPU-GOGR2022S.gfc');
 % STEP_INPUT = 6; % degrees
 % STEP_INT = 3; % degrees
-% min_l = 10;
+% min_l = 0;
 % max_l = 300;
 % 
-% lat = (1:STEP_INPUT:179)';
-% lon = (1:STEP_INPUT:359)'; 
+% lat = (-90:STEP_INPUT:90)';
+% lon = (-180:STEP_INPUT:180)'; 
 % [lon, lat] = meshgrid(lon, lat);
 % lon = lon(:); lat = lat(:);
 % data.main = table(lon, lat);
 % data.main.U = Potential(lat, lon, CS.GM, CS.R, min_l, max_l, CS.C_lm, CS.S_lm);
 % 
-% lat = (1:STEP_INT:179)';
-% lon = (1:STEP_INT:359)'; 
+% lat = (-90:STEP_INT:90)';
+% lon = (-180:STEP_INT:180)'; 
 % [lon, lat] = meshgrid(lon, lat);
 % lon = lon(:); lat = lat(:);
 % data.valid = table(lon, lat);
